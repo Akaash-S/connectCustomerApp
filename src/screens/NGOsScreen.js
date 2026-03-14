@@ -21,164 +21,184 @@ const ALL_NGOS = [
   { id: '3', name: 'Child Care Int.', category: 'Education', location: 'Delhi', volunteers: '500', events: '20', verified: true },
 ];
 
+const MeshBackground = () => (
+  <View style={[StyleSheet.absoluteFill, { backgroundColor: '#F0FDFA' }]}>
+    <View style={[styles.blob, { top: -100, left: -50, backgroundColor: 'rgba(13, 148, 136, 0.08)', width: 350, height: 350 }]} />
+    <View style={[styles.blob, { bottom: 200, right: -100, backgroundColor: 'rgba(59, 130, 246, 0.05)', width: 450, height: 450 }]} />
+  </View>
+);
+
 export const NGOsScreen = ({ navigation }) => {
   const theme = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
 
   const renderFeaturedNGO = ({ item }) => (
-    <Card style={styles.featuredCard} onPress={() => navigation.navigate('NGODetails')}>
+    <Card style={styles.featuredGlassCard} onPress={() => navigation.navigate('NGODetails')} activeOpacity={1}>
       <Image source={{ uri: item.image }} style={styles.featuredImage} />
-      <View style={styles.featuredOverlay}>
+      <View style={styles.glassOverlay}>
+        <View style={styles.categoryBadgeMini}>
+          <Text style={styles.categoryBadgeText}>{item.category}</Text>
+        </View>
         <Text variant="titleLarge" style={styles.featuredName}>{item.name}</Text>
-        <Text variant="bodySmall" style={styles.featuredMeta}>{item.category} • {item.location}</Text>
+        
         <View style={styles.featuredStatsRow}>
           <View style={styles.featuredStat}>
             <Text style={styles.statCount}>{item.volunteers}</Text>
             <Text style={styles.statLabel}>Volunteers</Text>
           </View>
+          <View style={styles.statDivider} />
           <View style={styles.featuredStat}>
             <Text style={styles.statCount}>{item.projects}</Text>
             <Text style={styles.statLabel}>Projects</Text>
           </View>
         </View>
-        <Button mode="contained" buttonColor={theme.colors.secondary} style={styles.featuredBtn}>View NGO</Button>
+        
+        <Button mode="contained" buttonColor="rgba(255,255,255,0.9)" textColor="#1A1C1E" style={styles.featuredBtn}>
+          View Impact
+        </Button>
       </View>
     </Card>
   );
 
   const renderNearbyNGO = ({ item }) => (
-    <Card style={styles.nearbyCard} onPress={() => navigation.navigate('NGODetails')}>
+    <Card style={styles.nearbyGlassCard} onPress={() => navigation.navigate('NGODetails')} activeOpacity={1}>
       <Image source={{ uri: item.image }} style={styles.nearbyImage} />
       <View style={styles.nearbyInfo}>
-        <Text variant="titleMedium" numberOfLines={1}>{item.name}</Text>
-        <Text variant="bodySmall" style={styles.nearbyMetaText}>📍 {item.distance}</Text>
-        <Text variant="labelSmall" style={{ color: theme.colors.primary }}>Cause: {item.category}</Text>
+        <Text variant="titleMedium" numberOfLines={1} style={styles.nearbyName}>{item.name}</Text>
+        <View style={styles.nearbyMetaRow}>
+          <MaterialCommunityIcons name="map-marker" size={14} color="#6B7280" />
+          <Text variant="bodySmall" style={styles.nearbyMetaText}>{item.distance}</Text>
+        </View>
       </View>
     </Card>
   );
 
   const renderNGOListItem = ({ item }) => (
-    <Card style={styles.listCard} onPress={() => navigation.navigate('NGODetails')}>
+    <Card style={styles.listGlassCard} onPress={() => navigation.navigate('NGODetails')} activeOpacity={1}>
       <View style={styles.listContent}>
-        <Avatar.Text size={48} label={item.name.substring(0, 1)} style={{ backgroundColor: theme.colors.primary }} />
+        <Avatar.Text size={54} label={item.name.substring(0, 1)} style={{ backgroundColor: '#E0F2FE' }} color="#0284C7" />
         <View style={styles.listInfo}>
           <View style={styles.listHeaderRow}>
             <Text variant="titleMedium" style={styles.listName}>{item.name}</Text>
-            {item.verified && <MaterialCommunityIcons name="check-decagram" size={16} color={theme.colors.secondary} style={{ marginLeft: 4 }} />}
+            {item.verified && <MaterialCommunityIcons name="check-decagram" size={18} color="#0EA5E9" style={{ marginLeft: 6 }} />}
           </View>
           <Text variant="bodySmall" style={styles.listMeta}>{item.category} • {item.location}</Text>
-          <Text variant="labelSmall" style={styles.listStats}>{item.volunteers} Volunteers | {item.events} Active Events</Text>
+          <View style={styles.listStatsRow}>
+            <MaterialCommunityIcons name="account-group-outline" size={14} color="#9CA3AF" />
+            <Text variant="labelSmall" style={styles.listStatsText}>{item.volunteers} active members</Text>
+          </View>
         </View>
-        <IconButton icon="chevron-right" size={20} />
+        <IconButton icon="chevron-right" size={24} iconColor="#D1D5DB" />
       </View>
     </Card>
   );
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* 1. Header & Search Section */}
-      <View style={styles.header}>
-        <View>
-          <Text variant="displaySmall" style={styles.headerTitle}>Discover NGOs</Text>
-          <Text variant="bodyMedium" style={styles.headerSub}>Find causes that matter to you</Text>
+    <View style={{ flex: 1 }}>
+      <MeshBackground />
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Header Section */}
+        <View style={styles.header}>
+          <View>
+            <Text variant="displaySmall" style={styles.headerTitle}>Discover NGOs</Text>
+            <Text variant="bodyLarge" style={styles.headerSub}>Empower the community today</Text>
+          </View>
         </View>
-        <IconButton 
-          icon="bell-outline" 
-          size={24} 
-          style={styles.headerBtn} 
-          containerColor="#FFF"
+
+        {/* Search Bar */}
+        <View style={styles.searchSection}>
+          <View style={styles.glassSearchWrapper}>
+            <MaterialCommunityIcons name="magnify" size={24} color="#6B7280" style={styles.searchIcon} />
+            <Searchbar
+              placeholder="Search by cause, name or city..."
+              onChangeText={setSearchQuery}
+              value={searchQuery}
+              style={styles.glassSearchBar}
+              elevation={0}
+              placeholderTextColor="#9CA3AF"
+              inputStyle={styles.searchInput}
+            />
+            <TouchableOpacity style={styles.filterGlassBtn}>
+              <MaterialCommunityIcons name="tune-vertical" color="#1A1C1E" size={20} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Categories */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+          {CATEGORIES.map(cat => (
+            <TouchableOpacity 
+              key={cat}
+              onPress={() => setActiveCategory(activeCategory === cat ? null : cat)}
+              style={[
+                styles.glassCategoryChip, 
+                activeCategory === cat && styles.activeCategoryChip
+              ]}
+            >
+              <Text style={[
+                styles.categoryChipText, 
+                activeCategory === cat && styles.activeCategoryText
+              ]}>{cat}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Featured NGOs Section */}
+        <View style={styles.sectionHeader}>
+          <Text variant="titleLarge" style={styles.sectionTitle}>Featured Organizations</Text>
+        </View>
+        <FlatList
+          horizontal
+          data={FEATURED_NGOS}
+          renderItem={renderFeaturedNGO}
+          keyExtractor={item => item.id}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.horizontalList}
         />
-      </View>
 
-      <View style={styles.searchSection}>
-        <View style={styles.searchWrapper}>
-          <Searchbar
-            placeholder="Search NGOs, causes..."
-            onChangeText={setSearchQuery}
-            value={searchQuery}
-            style={styles.searchBar}
-            elevation={0}
-            inputStyle={styles.searchInput}
-          />
-          <TouchableOpacity style={[styles.filterBtn, { backgroundColor: theme.colors.secondary }]}>
-            <MaterialCommunityIcons name="tune-vertical" color="#FFF" size={20} />
-          </TouchableOpacity>
+        {/* Nearby NGOs Section */}
+        <View style={styles.sectionHeader}>
+          <Text variant="titleLarge" style={styles.sectionTitle}>Working Near You</Text>
         </View>
-      </View>
+        <FlatList
+          horizontal
+          data={NEARBY_NGOS}
+          renderItem={renderNearbyNGO}
+          keyExtractor={item => item.id}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.horizontalList}
+        />
 
-      {/* 2. Featured NGOs Section */}
-      <View style={styles.sectionHeader}>
-        <Text variant="titleLarge" style={styles.sectionTitle}>⭐ Featured NGOs</Text>
-      </View>
-      <FlatList
-        horizontal
-        data={FEATURED_NGOS}
-        renderItem={renderFeaturedNGO}
-        keyExtractor={item => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.horizontalList}
-      />
+        {/* All NGOs List */}
+        <View style={styles.sectionHeader}>
+          <Text variant="titleLarge" style={styles.sectionTitle}>All Organizations</Text>
+          <Button mode="text" labelStyle={{ color: '#0EA5E9' }}>Filter</Button>
+        </View>
+        <View style={styles.listContainer}>
+          {ALL_NGOS.map(ngo => (
+            <View key={ngo.id}>{renderNGOListItem({ item: ngo })}</View>
+          ))}
+        </View>
 
-      {/* 3. Nearby NGOs Section */}
-      <View style={styles.sectionHeader}>
-        <Text variant="titleLarge" style={styles.sectionTitle}>📍 NGOs Near You</Text>
-      </View>
-      <FlatList
-        horizontal
-        data={NEARBY_NGOS}
-        renderItem={renderNearbyNGO}
-        keyExtractor={item => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.horizontalList}
-      />
-
-      {/* 5. NGO Categories */}
-      <View style={styles.sectionHeader}>
-        <Text variant="titleLarge" style={styles.sectionTitle}>Categories</Text>
-      </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
-        {CATEGORIES.map(cat => (
-          <Chip
-            key={cat}
-            selected={activeCategory === cat}
-            onPress={() => setActiveCategory(activeCategory === cat ? null : cat)}
-            style={[styles.categoryChip, activeCategory === cat && { backgroundColor: theme.colors.primary }]}
-            textStyle={[styles.categoryChipText, activeCategory === cat && { color: '#FFF' }]}
-            showSelectedOverlay
-          >
-            {cat}
-          </Chip>
-        ))}
+        <View style={{ height: 120 }} />
       </ScrollView>
-
-      {/* 4. All NGOs List */}
-      <View style={styles.sectionHeader}>
-        <Text variant="titleLarge" style={styles.sectionTitle}>All NGOs</Text>
-      </View>
-      <View style={styles.listContainer}>
-        {ALL_NGOS.map(ngo => (
-          <View key={ngo.id}>{renderNGOListItem({ item: ngo })}</View>
-        ))}
-      </View>
-
-      <View style={{ height: 100 }} />
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF9F0',
+  },
+  blob: {
+    position: 'absolute',
+    borderRadius: 300,
   },
   header: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 60,
-    paddingBottom: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    paddingBottom: 20,
   },
   headerTitle: {
     fontWeight: '900',
@@ -186,110 +206,179 @@ const styles = StyleSheet.create({
   },
   headerSub: {
     color: '#6B7280',
-    marginTop: -2,
-  },
-  headerBtn: {
-    margin: 0,
-    marginTop: 5,
-    elevation: 2,
-    borderRadius: 12,
+    marginTop: 4,
   },
   searchSection: {
-    paddingHorizontal: 20,
-    marginBottom: 5,
+    paddingHorizontal: 24,
+    marginBottom: 20,
   },
-  searchWrapper: {
+  glassSearchWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-  },
-  searchBar: {
-    flex: 1,
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    height: 54,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    height: 60,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.04,
+    shadowRadius: 20,
+    elevation: 4,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#F1F5F9',
+  },
+  searchIcon: {
+    marginRight: 4,
+  },
+  glassSearchBar: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    height: '100%',
   },
   searchInput: {
     fontSize: 15,
+    paddingLeft: 0,
   },
-  filterBtn: {
-    width: 54,
-    height: 54,
-    borderRadius: 16,
+  filterGlassBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 3,
+    elevation: 2,
+  },
+  categoryScroll: {
+    paddingLeft: 24,
+    paddingBottom: 20,
+  },
+  glassCategoryChip: {
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  activeCategoryChip: {
+    backgroundColor: '#1A1C1E',
+    borderColor: '#1A1C1E',
+  },
+  categoryChipText: {
+    fontWeight: '700',
+    color: '#4B5563',
+  },
+  activeCategoryText: {
+    color: '#FFF',
   },
   sectionHeader: {
-    paddingHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 15,
+    paddingHorizontal: 24,
+    marginTop: 10,
+    marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   sectionTitle: {
     fontWeight: '900',
     color: '#1A1C1E',
   },
   horizontalList: {
-    paddingLeft: 20,
-    paddingBottom: 20,
+    paddingLeft: 24,
+    paddingBottom: 24,
   },
-  featuredCard: {
+  featuredGlassCard: {
     width: 280,
     height: 380,
     marginRight: 20,
-    borderRadius: 32,
+    borderRadius: 36,
     overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.1,
+    shadowRadius: 30,
     elevation: 8,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   featuredImage: {
     width: '100%',
     height: '100%',
+    opacity: 0.8,
   },
-  featuredOverlay: {
+  glassOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
     padding: 24,
     justifyContent: 'flex-end',
+  },
+  categoryBadgeMini: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  categoryBadgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
   },
   featuredName: {
     color: '#FFF',
     fontWeight: '900',
-  },
-  featuredMeta: {
-    color: '#F3F4F6',
-    marginBottom: 15,
+    marginBottom: 16,
   },
   featuredStatsRow: {
     flexDirection: 'row',
-    marginBottom: 20,
+    alignItems: 'center',
+    marginBottom: 24,
   },
   featuredStat: {
-    marginRight: 25,
+    flex: 1,
+  },
+  statDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    mx: 15,
   },
   statCount: {
     color: '#FFF',
-    fontWeight: 'bold',
+    fontWeight: '900',
     fontSize: 18,
   },
   statLabel: {
-    color: '#D1D5DB',
+    color: '#E5E7EB',
     fontSize: 10,
     textTransform: 'uppercase',
   },
   featuredBtn: {
     borderRadius: 16,
     height: 48,
-    justifyContent: 'center',
   },
-  nearbyCard: {
-    width: 180,
-    marginRight: 15,
-    borderRadius: 24,
-    backgroundColor: '#FFF',
-    elevation: 2,
-    padding: 8,
+  nearbyGlassCard: {
+    width: 230,
+    marginRight: 20,
+    borderRadius: 32,
+    backgroundColor: '#FFFFFF',
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.05,
+    shadowRadius: 24,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   nearbyImage: {
     width: '100%',
@@ -297,33 +386,36 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   nearbyInfo: {
-    padding: 8,
+    padding: 12,
+  },
+  nearbyName: {
+    fontWeight: '800',
+    color: '#1A1C1E',
+    marginBottom: 6,
+  },
+  nearbyMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   nearbyMetaText: {
     color: '#6B7280',
-    marginVertical: 4,
-  },
-  categoryScroll: {
-    paddingLeft: 20,
-    paddingBottom: 10,
-  },
-  categoryChip: {
-    marginRight: 10,
-    borderRadius: 12,
-    backgroundColor: '#FFF',
-    elevation: 1,
-  },
-  categoryChipText: {
-    fontWeight: 'bold',
+    fontSize: 12,
   },
   listContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
-  listCard: {
-    marginBottom: 15,
-    borderRadius: 24,
-    backgroundColor: '#FFF',
-    elevation: 1,
+  listGlassCard: {
+    marginBottom: 20,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.04,
+    shadowRadius: 20,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   listContent: {
     flexDirection: 'row',
@@ -332,20 +424,27 @@ const styles = StyleSheet.create({
   },
   listInfo: {
     flex: 1,
-    marginLeft: 15,
+    marginLeft: 16,
   },
   listHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   listName: {
-    fontWeight: 'bold',
+    fontWeight: '800',
+    color: '#1A1C1E',
   },
   listMeta: {
     color: '#6B7280',
-    marginVertical: 2,
+    marginVertical: 4,
   },
-  listStats: {
+  listStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  listStatsText: {
     color: '#9CA3AF',
+    fontWeight: '600',
   }
 });

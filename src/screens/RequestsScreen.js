@@ -46,130 +46,146 @@ const ACTIVITY_HISTORY = [
   { id: '3', date: '18 March', action: 'Request #142 Completed', icon: 'check-decagram' },
 ];
 
+const MeshBackground = () => (
+  <View style={[StyleSheet.absoluteFill, { backgroundColor: '#F5F7FF' }]}>
+    <View style={[styles.blob, { top: -100, right: -50, backgroundColor: 'rgba(99, 102, 241, 0.08)', width: 400, height: 400 }]} />
+    <View style={[styles.blob, { bottom: 100, left: -100, backgroundColor: 'rgba(16, 185, 129, 0.05)', width: 350, height: 350 }]} />
+  </View>
+);
+
 export const RequestsScreen = ({ navigation }) => {
   const theme = useTheme();
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text variant="displaySmall" style={styles.headerTitle}>My Activity</Text>
-        <Text variant="bodyMedium" style={styles.headerSub}>Track your impact & requests</Text>
-      </View>
+    <View style={{ flex: 1 }}>
+      <MeshBackground />
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text variant="displaySmall" style={styles.headerTitle}>My Activity</Text>
+          <Text variant="bodyLarge" style={styles.headerSub}>Tracking your community impact</Text>
+        </View>
 
-      {/* 1. Activity Summary Dashboard */}
-      <View style={styles.statsSection}>
-        <Text variant="titleMedium" style={styles.sectionLabel}>Dashboard Overview</Text>
-        <View style={styles.statsRow}>
-          {ACTIVITY_STATS.map(stat => (
-            <Card key={stat.id} style={styles.statCard}>
-              <View style={styles.statContent}>
-                <View style={[styles.statIconContainer, { backgroundColor: stat.color + '20' }]}>
-                  <MaterialCommunityIcons name={stat.icon} size={20} color={stat.color} />
+        {/* 1. Activity Summary Dashboard */}
+        <View style={styles.statsSection}>
+          <View style={styles.statsRow}>
+            {ACTIVITY_STATS.map(stat => (
+              <Card key={stat.id} style={styles.statGlassCard}>
+                <View style={styles.statContent}>
+                  <View style={[styles.statIconBox, { backgroundColor: stat.color + '15' }]}>
+                    <MaterialCommunityIcons name={stat.icon} size={22} color={stat.color} />
+                  </View>
+                  <Text variant="headlineSmall" style={[styles.statCount, { color: '#1A1C1E' }]}>{stat.count}</Text>
+                  <Text variant="labelSmall" style={styles.statLabel}>{stat.label}</Text>
                 </View>
-                <Text variant="headlineSmall" style={[styles.statCount, { color: stat.color }]}>{stat.count}</Text>
-                <Text variant="labelSmall" style={styles.statLabel}>{stat.label}</Text>
-              </View>
-            </Card>
-          ))}
+              </Card>
+            ))}
+          </View>
         </View>
-      </View>
 
-      {/* 2. My Requests Section */}
-      <View style={styles.section}>
+        {/* 2. My Requests Section */}
         <View style={styles.sectionHeader}>
-          <Text variant="titleLarge" style={styles.sectionTitle}>My Requests</Text>
-          <Button mode="text" compact>View All</Button>
+          <Text variant="titleLarge" style={styles.sectionTitle}>Active Requests</Text>
+          <Button mode="text" labelStyle={{ color: '#6366F1' }}>View All</Button>
         </View>
+        
         {MY_REQUESTS.map(req => (
           <TouchableOpacity 
             key={req.id} 
-            activeOpacity={0.7}
+            activeOpacity={0.8}
             onPress={() => navigation.navigate('RequestDetails', { requestId: req.id })}
+            style={styles.requestItem}
           >
-            <Card style={styles.requestCard}>
-              <View style={styles.requestContent}>
-                <View style={styles.requestMain}>
-                  <Text variant="titleMedium" style={styles.requestTitle}>{req.title}</Text>
-                  <View style={styles.requestMeta}>
-                    <Text variant="labelSmall" style={styles.metaText}>📍 {req.location}  •  📅 {req.date}</Text>
+            <View style={styles.progressGlassCard}>
+              <View style={styles.reqTop}>
+                <View style={styles.reqMainInfo}>
+                  <Text variant="titleMedium" style={styles.reqTitle}>{req.title}</Text>
+                  <View style={styles.reqMetaRow}>
+                    <MaterialCommunityIcons name="map-marker" size={14} color="#6B7280" />
+                    <Text variant="bodySmall" style={styles.reqMetaText}>{req.location} • {req.date}</Text>
                   </View>
-                  <View style={styles.statusContainer}>
-                    <View style={[styles.statusDot, { backgroundColor: req.statusColor }]} />
-                    <Text variant="labelSmall" style={[styles.statusText, { color: req.statusColor }]}>{req.status}</Text>
-                  </View>
-                  <ProgressBar progress={req.progress} color={req.statusColor} style={styles.requestProgress} />
                 </View>
-                <IconButton icon="chevron-right" size={24} />
+                <View style={[styles.statusGlassBadge, { backgroundColor: req.statusColor + '15' }]}>
+                  <Text style={[styles.statusBadgeText, { color: req.statusColor }]}>{req.status.toUpperCase()}</Text>
+                </View>
               </View>
-            </Card>
+              
+              <View style={styles.progressSection}>
+                <View style={styles.progressLabels}>
+                  <Text style={styles.progressLabelText}>Response Rate</Text>
+                  <Text style={styles.progressValueText}>{Math.round(req.progress * 100)}%</Text>
+                </View>
+                <ProgressBar progress={req.progress} color={req.statusColor} style={styles.premiumProgress} />
+              </View>
+            </View>
           </TouchableOpacity>
         ))}
-      </View>
 
-      {/* 3. Volunteer Reports Section */}
-      <View style={styles.section}>
+        {/* 3. Volunteer Reports Section */}
         <View style={styles.sectionHeader}>
-          <Text variant="titleLarge" style={styles.sectionTitle}>Volunteer Reports</Text>
+          <Text variant="titleLarge" style={styles.sectionTitle}>Recent Reports</Text>
         </View>
+        
         {VOLUNTEER_REPORTS.map(report => (
-          <Card key={report.id} style={styles.reportCard}>
-            <View style={styles.reportItemContainer}>
-              <View style={styles.reportLeft}>
-                <Avatar.Icon icon={report.icon} size={40} style={{ backgroundColor: '#EEF2FF' }} color="#4F46E5" />
-                <View style={styles.reportTextInfo}>
-                  <Text variant="titleMedium" style={styles.reportItemTitle}>{report.title}</Text>
-                  <Text variant="bodySmall" style={styles.reportItemSub}>{`Completed by ${report.volunteer} • ${report.date}`}</Text>
-                </View>
+          <Card key={report.id} style={styles.reportGlassCard}>
+            <View style={styles.reportContent}>
+              <View style={styles.reportIconCircle}>
+                <MaterialCommunityIcons name={report.icon} size={24} color="#4F46E5" />
               </View>
-              <Button 
-                mode="outlined" 
-                compact 
-                style={styles.viewReportBtn}
-                onPress={() => navigation.navigate('ReportDetails', { reportId: report.id })}
-              >
-                View
-              </Button>
+              <View style={styles.reportText}>
+                <Text variant="titleMedium" style={styles.reportTitleText}>{report.title}</Text>
+                <Text variant="bodySmall" style={styles.reportSubText}>{`By ${report.volunteer} • ${report.date}`}</Text>
+              </View>
+              <IconButton 
+                icon="arrow-right-circle-outline" 
+                size={24} 
+                iconColor="#6366F1"
+                onPress={() => navigation.navigate('ReportDetails', { reportId: report.id })} 
+              />
             </View>
           </Card>
         ))}
-      </View>
 
-      {/* 4. Activity History / Timeline */}
-      <View style={styles.section}>
-        <Text variant="titleLarge" style={[styles.sectionTitle, { marginLeft: 20, marginBottom: 20 }]}>Recent Activity</Text>
-        <View style={styles.timelineContainer}>
+        {/* 4. Activity History / Timeline */}
+        <View style={styles.sectionHeader}>
+          <Text variant="titleLarge" style={styles.sectionTitle}>Activity Timeline</Text>
+        </View>
+        
+        <View style={styles.glassTimeline}>
           {ACTIVITY_HISTORY.map((item, index) => (
-            <View key={item.id} style={styles.timelineItem}>
-              <View style={styles.timelineLeft}>
-                <View style={[styles.timelineIcon, { backgroundColor: theme.colors.surfaceVariant }]}>
-                  <MaterialCommunityIcons name={item.icon} size={18} color={theme.colors.primary} />
+            <View key={item.id} style={styles.timelineNode}>
+              <View style={styles.nodeLeft}>
+                <View style={styles.nodeCircle}>
+                  <MaterialCommunityIcons name={item.icon} size={16} color="#4F46E5" />
                 </View>
-                {index !== ACTIVITY_HISTORY.length - 1 && <View style={styles.timelineConnector} />}
+                {index !== ACTIVITY_HISTORY.length - 1 && <View style={styles.nodeLine} />}
               </View>
-              <View style={styles.timelineRight}>
-                <Text variant="labelSmall" style={styles.timelineDate}>{item.date}</Text>
-                <Text variant="bodyMedium" style={styles.timelineAction}>{item.action}</Text>
+              <View style={styles.nodeRight}>
+                <Text style={styles.nodeDate}>{item.date}</Text>
+                <Text style={styles.nodeLabel}>{item.action}</Text>
               </View>
             </View>
           ))}
         </View>
-      </View>
 
-      <View style={{ height: 100 }} />
-    </ScrollView>
+        <View style={{ height: 120 }} />
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF9F0',
+  },
+  blob: {
+    position: 'absolute',
+    borderRadius: 300,
   },
   header: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 60,
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   headerTitle: {
     fontWeight: '900',
@@ -177,42 +193,39 @@ const styles = StyleSheet.create({
   },
   headerSub: {
     color: '#6B7280',
-    marginTop: -2,
+    marginTop: 4,
   },
   statsSection: {
-    paddingHorizontal: 20,
-    marginBottom: 25,
-  },
-  sectionLabel: {
-    color: '#374151',
-    fontWeight: 'bold',
-    marginBottom: 12,
-    fontSize: 14,
+    paddingHorizontal: 24,
+    marginBottom: 20,
   },
   statsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 10,
+    gap: 12,
   },
-  statCard: {
+  statGlassCard: {
     flex: 1,
-    borderRadius: 20,
-    backgroundColor: '#FFF',
-    elevation: 2,
+    borderRadius: 26,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
+    elevation: 3,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#F1F5F9',
   },
   statContent: {
-    padding: 12,
+    padding: 16,
     alignItems: 'center',
   },
-  statIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
+  statIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   statCount: {
     fontWeight: '900',
@@ -220,158 +233,186 @@ const styles = StyleSheet.create({
   statLabel: {
     color: '#9CA3AF',
     marginTop: 2,
-  },
-  section: {
-    marginBottom: 30,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    fontWeight: '700',
   },
   sectionHeader: {
+    paddingHorizontal: 24,
+    marginTop: 10,
+    marginBottom: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 15,
   },
   sectionTitle: {
     fontWeight: '900',
     color: '#1A1C1E',
   },
-  requestCard: {
-    marginHorizontal: 20,
-    marginBottom: 12,
-    borderRadius: 24,
-    backgroundColor: '#FFF',
+  requestItem: {
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  progressGlassCard: {
+    borderRadius: 32,
+    backgroundColor: '#FFFFFF',
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.05,
+    shadowRadius: 24,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  reqTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  reqMainInfo: {
+    flex: 1,
+    marginRight: 10,
+  },
+  reqTitle: {
+    fontWeight: '800',
+    color: '#1A1C1E',
+  },
+  reqMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 4,
+  },
+  reqMetaText: {
+    color: '#6B7280',
+    fontSize: 12,
+  },
+  statusGlassBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+  statusBadgeText: {
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  progressSection: {
+    marginTop: 10,
+  },
+  progressLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  progressLabelText: {
+    color: '#6B7280',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  progressValueText: {
+    color: '#1A1C1E',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  premiumProgress: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  reportGlassCard: {
+    marginHorizontal: 24,
+    marginBottom: 18,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.03,
+    shadowRadius: 16,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#F1F5F9',
   },
-  requestContent: {
+  reportContent: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
   },
-  requestMain: {
+  reportIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  reportText: {
     flex: 1,
+    marginLeft: 16,
   },
-  requestTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
+  reportTitleText: {
+    fontWeight: '800',
+    color: '#1A1C1E',
   },
-  requestMeta: {
-    marginTop: 4,
-  },
-  metaText: {
+  reportSubText: {
     color: '#6B7280',
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  statusText: {
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
-  requestProgress: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#F3F4F6',
-    marginTop: 4,
-  },
-  reportCard: {
-    marginHorizontal: 20,
-    marginBottom: 12,
-    borderRadius: 20,
-    backgroundColor: '#FFF',
-    elevation: 2,
-    overflow: 'hidden',
-  },
-  reportItemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 12,
-  },
-  reportLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  reportTextInfo: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  reportItemTitle: {
-    fontWeight: 'bold',
-  },
-  reportItemSub: {
-    color: '#6B7280',
-  },
-  viewReportBtn: {
-    borderRadius: 8,
-  },
-  eventMiniCard: {
-    marginHorizontal: 20,
-    marginBottom: 10,
-    borderRadius: 20,
-    backgroundColor: '#FFF',
-    elevation: 1,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  eventMiniContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-  },
-  eventMiniTitle: {
-    fontWeight: 'bold',
-  },
-  eventMiniMeta: {
-    color: '#9CA3AF',
     marginTop: 2,
   },
-  timelineContainer: {
-    paddingHorizontal: 25,
-  },
-  timelineItem: {
-    flexDirection: 'row',
+  glassTimeline: {
+    marginHorizontal: 24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 36,
+    padding: 28,
     marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.04,
+    shadowRadius: 24,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
-  timelineLeft: {
+  timelineNode: {
+    flexDirection: 'row',
+    minHeight: 80,
+  },
+  nodeLeft: {
     alignItems: 'center',
-    marginRight: 15,
+    width: 24,
+    marginRight: 16,
   },
-  timelineIcon: {
-    width: 36,
-    height: 36,
+  nodeCircle: {
+    width: 24,
+    height: 24,
     borderRadius: 12,
+    backgroundColor: '#FFF',
+    borderWidth: 2,
+    borderColor: '#4F46E5',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 2,
   },
-  timelineConnector: {
+  nodeLine: {
     width: 2,
     flex: 1,
     backgroundColor: '#E5E7EB',
-    marginVertical: -5,
+    marginVertical: 4,
   },
-  timelineRight: {
+  nodeRight: {
     flex: 1,
-    paddingTop: 4,
+    paddingBottom: 24,
   },
-  timelineDate: {
+  nodeDate: {
+    fontSize: 12,
     color: '#9CA3AF',
-    fontWeight: 'bold',
+    fontWeight: '700',
+    marginBottom: 4,
   },
-  timelineAction: {
+  nodeLabel: {
+    fontSize: 14,
     color: '#1A1C1E',
-    marginTop: 2,
-    fontWeight: '500',
-  },
+    fontWeight: '800',
+  }
 });

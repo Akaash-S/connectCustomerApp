@@ -19,23 +19,23 @@ const MenuItem = ({ title, icon, color, onPress }) => (
   </TouchableOpacity>
 );
 
-export const ReportsMenu = ({ onNavigate }) => {
+export const SavedItemsMenu = ({ onNavigate }) => {
   return (
     <View style={styles.container}>
-      <Text variant="titleMedium" style={styles.sectionHeader}>Requests & Reports</Text>
+      <Text variant="titleMedium" style={styles.sectionHeader}>Saved & Favorites</Text>
       <View style={styles.menuCard}>
         <MenuItem 
-          title="Request Reports" 
-          icon="file-chart-outline" 
-          color="#F43F5E" 
-          onPress={() => onNavigate('MyRequests')} 
+          title="Saved NGOs" 
+          icon="heart-outline" 
+          color="#EC4899" 
+          onPress={() => onNavigate('SavedItems')} 
         />
         <Divider style={styles.divider} />
         <MenuItem 
-          title="Volunteer Completion Reports" 
-          icon="check-decagram-outline" 
+          title="Saved Events" 
+          icon="bookmark-outline" 
           color="#8B5CF6" 
-          onPress={() => onNavigate('MyRequests')} 
+          onPress={() => onNavigate('SavedItems')} 
         />
       </View>
     </View>
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   },
   menuCard: {
     backgroundColor: '#FFF',
-    borderRadius: 28,
+    borderRadius: 24,
     overflow: 'hidden',
     elevation: 2,
     borderWidth: 1,
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
   },
   menuItemLeft: {
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
   },
   menuTitle: {
     fontWeight: '700',
-    fontSize: 16,
-    color: '#344054',
+    fontSize: 15,
+    color: '#374151',
     marginLeft: 15,
   },
   iconContainer: {

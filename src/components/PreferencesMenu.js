@@ -19,24 +19,18 @@ const MenuItem = ({ title, icon, color, onPress }) => (
   </TouchableOpacity>
 );
 
-export const ReportsMenu = ({ onNavigate }) => {
+export const PreferencesMenu = ({ onNavigate }) => {
   return (
     <View style={styles.container}>
-      <Text variant="titleMedium" style={styles.sectionHeader}>Requests & Reports</Text>
+      <Text variant="titleMedium" style={styles.sectionHeader}>Personalization & Preferences</Text>
       <View style={styles.menuCard}>
-        <MenuItem 
-          title="Request Reports" 
-          icon="file-chart-outline" 
-          color="#F43F5E" 
-          onPress={() => onNavigate('MyRequests')} 
-        />
+        <MenuItem title="Notifications" icon="bell-ring-outline" color="#3B82F6" onPress={() => onNavigate('Preferences', { type: 'Notifications' })} />
         <Divider style={styles.divider} />
-        <MenuItem 
-          title="Volunteer Completion Reports" 
-          icon="check-decagram-outline" 
-          color="#8B5CF6" 
-          onPress={() => onNavigate('MyRequests')} 
-        />
+        <MenuItem title="Location Settings" icon="map-marker-radius-outline" color="#10B981" onPress={() => onNavigate('Preferences', { type: 'Location' })} />
+        <Divider style={styles.divider} />
+        <MenuItem title="Language" icon="translate" color="#F59E0B" onPress={() => onNavigate('Preferences', { type: 'Language' })} />
+        <Divider style={styles.divider} />
+        <MenuItem title="App Theme" icon="palette-outline" color="#8B5CF6" onPress={() => onNavigate('Preferences', { type: 'Theme' })} />
       </View>
     </View>
   );
@@ -55,7 +49,7 @@ const styles = StyleSheet.create({
   },
   menuCard: {
     backgroundColor: '#FFF',
-    borderRadius: 28,
+    borderRadius: 24,
     overflow: 'hidden',
     elevation: 2,
     borderWidth: 1,
@@ -65,7 +59,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
   },
   menuItemLeft: {
@@ -74,8 +68,8 @@ const styles = StyleSheet.create({
   },
   menuTitle: {
     fontWeight: '700',
-    fontSize: 16,
-    color: '#344054',
+    fontSize: 15,
+    color: '#374151',
     marginLeft: 15,
   },
   iconContainer: {

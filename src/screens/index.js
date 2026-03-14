@@ -1,3 +1,4 @@
+export * from './NotificationsScreen';
 export * from './PlaceholderScreen';
 export * from './HomeScreen';
 export * from './NGOsScreen';
@@ -12,3 +13,10 @@ export * from './LoginScreen';
 export * from './RequestDetailsScreen';
 export * from './ReportDetailsScreen';
 export * from './EditProfileScreen';
+export * from './profile/MyRequestsScreen';
+export * from './profile/JoinedEventsScreen';
+export * from './profile/SavedItemsScreen';
+export * from './profile/PreferencesScreens';
+export * from './profile/SecurityPrivacyScreens';
+export * from './profile/SupportHelpScreens';
+export * from './profile/LegalScreens';

@@ -6,7 +6,9 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import {
   HomeScreen, NGOsScreen, EventsScreen, RequestsScreen, ProfileScreen,
   PlaceholderScreen, RequestHelpScreen, NGODetailsScreen, EventDetailsScreen,
-  SplashScreen, LoginScreen, RequestDetailsScreen, ReportDetailsScreen, EditProfileScreen
+  SplashScreen, LoginScreen, RequestDetailsScreen, ReportDetailsScreen, EditProfileScreen,
+  MyRequestsScreen, JoinedEventsScreen, SavedItemsScreen, PreferencesScreens,
+  SecurityPrivacyScreens, SupportHelpScreens, LegalScreens, NotificationsScreen
 } from '../screens';
 import { useTheme, Text } from 'react-native-paper';
 import { Dimensions } from 'react-native';
@@ -142,8 +144,15 @@ const ReportStack = () => (
 const ProfileStack = () => (
   <Stack.Navigator>
     <Stack.Screen name="ProfileMain" component={ProfileScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="Notifications" component={PlaceholderScreen} options={{ title: 'Notifications' }} />
+    <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }} />
     <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="MyRequests" component={MyRequestsScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="JoinedEvents" component={JoinedEventsScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="SavedItems" component={SavedItemsScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="Preferences" component={PreferencesScreens} options={{ headerShown: false }} />
+    <Stack.Screen name="SecurityPrivacy" component={SecurityPrivacyScreens} options={{ headerShown: false }} />
+    <Stack.Screen name="SupportHelp" component={SupportHelpScreens} options={{ headerShown: false }} />
+    <Stack.Screen name="Legal" component={LegalScreens} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 

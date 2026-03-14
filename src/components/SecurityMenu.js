@@ -19,24 +19,16 @@ const MenuItem = ({ title, icon, color, onPress }) => (
   </TouchableOpacity>
 );
 
-export const ReportsMenu = ({ onNavigate }) => {
+export const SecurityMenu = ({ onNavigate }) => {
   return (
     <View style={styles.container}>
-      <Text variant="titleMedium" style={styles.sectionHeader}>Requests & Reports</Text>
+      <Text variant="titleMedium" style={styles.sectionHeader}>Security & Privacy</Text>
       <View style={styles.menuCard}>
-        <MenuItem 
-          title="Request Reports" 
-          icon="file-chart-outline" 
-          color="#F43F5E" 
-          onPress={() => onNavigate('MyRequests')} 
-        />
+        <MenuItem title="Privacy Settings" icon="shield-check-outline" color="#10B981" onPress={() => onNavigate('SecurityPrivacy', { type: 'Privacy' })} />
         <Divider style={styles.divider} />
-        <MenuItem 
-          title="Volunteer Completion Reports" 
-          icon="check-decagram-outline" 
-          color="#8B5CF6" 
-          onPress={() => onNavigate('MyRequests')} 
-        />
+        <MenuItem title="Account Security" icon="lock-outline" color="#EF4444" onPress={() => onNavigate('SecurityPrivacy', { type: 'Security' })} />
+        <Divider style={styles.divider} />
+        <MenuItem title="Data Permissions" icon="database-lock-outline" color="#3B82F6" onPress={() => {}} />
       </View>
     </View>
   );
@@ -55,7 +47,7 @@ const styles = StyleSheet.create({
   },
   menuCard: {
     backgroundColor: '#FFF',
-    borderRadius: 28,
+    borderRadius: 24,
     overflow: 'hidden',
     elevation: 2,
     borderWidth: 1,
@@ -65,7 +57,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
   },
   menuItemLeft: {
@@ -74,8 +66,8 @@ const styles = StyleSheet.create({
   },
   menuTitle: {
     fontWeight: '700',
-    fontSize: 16,
-    color: '#344054',
+    fontSize: 15,
+    color: '#374151',
     marginLeft: 15,
   },
   iconContainer: {
