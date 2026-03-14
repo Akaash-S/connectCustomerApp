@@ -66,17 +66,12 @@ export const LoginScreen = ({ navigation }) => {
             <Button 
               mode="contained" 
               onPress={handleLogin} 
-              style={styles.googleBtn}
-              contentStyle={styles.googleBtnContent}
-              labelStyle={styles.googleBtnLabel}
+              style={styles.getStartedBtn}
+              contentStyle={styles.getStartedBtnContent}
+              labelStyle={styles.getStartedBtnLabel}
               activeOpacity={1}
-              icon={({ size }) => (
-                <View style={styles.googleIconCircle}>
-                  <MaterialCommunityIcons name="google" size={20} color="#EA4335" />
-                </View>
-              )}
             >
-              Continue with Google
+              Get Started
             </Button>
             
             <TouchableOpacity style={styles.alternateOption} activeOpacity={1}>
@@ -161,26 +156,24 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 40,
   },
-  googleBtn: {
+  getStartedBtn: {
     borderRadius: 24,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: PRIMARY_COLOR,
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: PRIMARY_COLOR,
     shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
   },
-  googleBtnContent: {
-    height: 64,
-    flexDirection: 'row-reverse',
+  getStartedBtnContent: {
+    height: 72,
   },
-  googleBtnLabel: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginLeft: 12,
+  getStartedBtnLabel: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
   },
   googleIconCircle: {
     width: 32,
