@@ -1,481 +1,413 @@
-import React, { useState } from 'react';
-import { StyleSheet, ScrollView, View, TouchableOpacity, Image, FlatList } from 'react-native';
-import { TextInput, Button, Text, useTheme, HelperText, Card, IconButton, Divider } from 'react-native-paper';
+import React, { useState, useRef } from 'react';
+import { StyleSheet, View, TouchableOpacity, Image, FlatList, Dimensions, Animated, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { TextInput, Button, Text, IconButton, RadioButton, ProgressBar, HelperText, Divider, SegmentedButtons } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { BlurView } from 'expo-blur';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const PRIMARY_COLOR = '#D97706'; 
 
 const CATEGORIES = [
-  { id: 'grocery', title: 'Groceries', icon: 'basket-outline', color: '#10B981' },
-  { id: 'medical', title: 'Medical', icon: 'medical-bag', color: '#EF4444' },
-  { id: 'mobility', title: 'Mobility', icon: 'wheelchair-accessibility', color: '#3B82F6' },
-  { id: 'general', title: 'General', icon: 'hand-heart-outline', color: '#8B5CF6' },
+  { id: 'environment', title: 'Environment', icon: 'tree-outline', color: '#10B981' },
+  { id: 'education', title: 'Education', icon: 'book-open-variant', color: '#3B82F6' },
+  { id: 'health', title: 'Health', icon: 'medical-bag', color: '#EF4444' },
+  { id: 'animals', title: 'Animal Welfare', icon: 'dog', color: '#F59E0B' },
+  { id: 'disaster', title: 'Disaster Relief', icon: 'alert-decagram-outline', color: '#6B7280' },
 ];
 
-export const RequestHelpScreen = ({ navigation }) => {
-  const theme = useTheme();
-  const [selectedCategory, setSelectedCategory] = useState('general');
-  const [media, setMedia] = useState([]);
+const SKILLS = ['First Aid', 'Teaching', 'Cleanup', 'Cooking', 'Driving'];
 
-  const { control, handleSubmit, formState: { errors } } = useForm({
+export const RequestHelpScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState('environment');
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [media, setMedia] = useState([]);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  // Added logic to handle potential bottom tab bar height if not provided by insets
+  const bottomClearance = Math.max(insets.bottom, 20) + 80;
+
+  const { control, watch, setValue } = useForm({
+    mode: 'onChange',
     defaultValues: {
       title: '',
       description: '',
+      urgency: 'medium',
       location: '',
-      volunteers: '1',
+      duration: '2-4 hours',
+      volunteers: 1,
+      equipment: 'none',
       date: new Date().toISOString().split('T')[0],
+      time: '10:00 AM',
+      contactMethod: 'in-app',
+      language: 'English',
+      notes: '',
     }
   });
 
-  const onSubmit = data => {
-    const finalData = { ...data, category: selectedCategory, media };
-    console.log('Final Request Data:', finalData);
+  const formValues = watch();
+
+  const transitionTo = (step) => {
+    Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
+      setCurrentStep(step);
+      Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+    });
+  };
+
+  const nextStep = () => {
+    if (currentStep < 6) transitionTo(currentStep + 1);
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) transitionTo(currentStep - 1);
+    else navigation.goBack();
+  };
+
+  const handleFinalSubmit = () => {
+    const finalData = { ...formValues, category: selectedCategory, skills: selectedSkills, media };
+    console.log('Final Submission:', finalData);
     navigation.goBack();
   };
 
-  const addPhoto = () => {
-    // Mock photo addition
-    const mockPhotos = [
-      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400',
-      'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400',
-      'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=400'
-    ];
-    const newPhoto = mockPhotos[Math.floor(Math.random() * mockPhotos.length)];
-    setMedia([...media, { id: Date.now().toString(), uri: newPhoto }]);
+  const toggleSkill = (skill) => {
+    setSelectedSkills(prev => 
+      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+    );
   };
 
-  const removePhoto = (id) => {
-    setMedia(media.filter(item => item.id !== id));
+  const addPhoto = () => {
+    const mockPhotos = ['https://tinyurl.com/2s44p8nx', 'https://tinyurl.com/3skk96b3'];
+    setMedia([...media, { id: Date.now().toString(), uri: mockPhotos[Math.floor(Math.random() * mockPhotos.length)] }]);
   };
+
+  const MeshBackground = () => (
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFF9F0' }]}>
+      <View style={[styles.blob, { top: -100, left: -50, backgroundColor: 'rgba(217, 119, 6, 0.15)', width: 300, height: 300 }]} />
+      <View style={[styles.blob, { bottom: -50, right: -50, backgroundColor: 'rgba(16, 185, 129, 0.15)', width: 400, height: 400 }]} />
+      <View style={[styles.blob, { top: SCREEN_HEIGHT * 0.4, right: -100, backgroundColor: 'rgba(59, 130, 246, 0.1)', width: 250, height: 250 }]} />
+    </View>
+  );
+
+  const GlassCard = ({ title, subtitle, children, onAction, actionLabel }) => (
+    <View style={styles.glassContainer}>
+      <BlurView intensity={40} tint="light" style={styles.glassCard}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>{title}</Text>
+          {subtitle && <Text style={styles.cardSubtitle}>{subtitle}</Text>}
+        </View>
+        
+        <ScrollView 
+          showsVerticalScrollIndicator={false} 
+          style={styles.cardScroll}
+          contentContainerStyle={styles.cardContent}
+        >
+          {children}
+        </ScrollView>
+
+        <View style={styles.cardFooter}>
+          <Button 
+            mode="contained" 
+            onPress={onAction} 
+            style={styles.actionBtn} 
+            contentStyle={styles.actionBtnContent}
+          >
+            {actionLabel}
+          </Button>
+        </View>
+      </BlurView>
+    </View>
+  );
+
+  const Step1Overview = () => (
+    <GlassCard 
+      title="1. Overview" 
+      subtitle="High priority or standard?"
+      actionLabel="Continue"
+      onAction={nextStep}
+    >
+      <Controller
+        control={control}
+        rules={{ required: 'Title is required', maxLength: 60 }}
+        render={({ field: { onChange, value } }) => (
+          <View>
+            <TextInput label="Title" mode="outlined" onChangeText={onChange} value={value} style={styles.glassInput} outlineColor="rgba(0,0,0,0.1)" />
+            <HelperText type="info" style={styles.charCount}>{value.length}/60</HelperText>
+          </View>
+        )}
+        name="title"
+      />
+      <Text style={styles.fieldLabel}>Urgency Level</Text>
+      <SegmentedButtons
+        value={formValues.urgency}
+        onValueChange={val => setValue('urgency', val)}
+        theme={{ colors: { secondaryContainer: PRIMARY_COLOR + '20' }}}
+        buttons={[
+          { value: 'low', label: 'Low' },
+          { value: 'medium', label: 'Medium' },
+          { value: 'high', label: 'High', checkedColor: '#EF4444' },
+        ]}
+        style={styles.segmented}
+      />
+      <Controller
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <View style={{ marginTop: 10 }}>
+            <TextInput label="Description" mode="outlined" multiline style={[styles.glassInput, { height: 100 }]} onChangeText={onChange} value={value} outlineColor="rgba(0,0,0,0.1)" />
+            <HelperText type="info" style={styles.charCount}>{value.length}/500</HelperText>
+          </View>
+        )}
+        name="description"
+      />
+    </GlassCard>
+  );
+
+  const Step2Category = () => (
+    <GlassCard 
+      title="2. Category" 
+      subtitle="Select the type of help"
+      actionLabel="Continue"
+      onAction={nextStep}
+    >
+      <View style={styles.pillContainer}>
+        {CATEGORIES.map(cat => (
+          <TouchableOpacity 
+            key={cat.id} 
+            style={[styles.glassPill, selectedCategory === cat.id && { backgroundColor: PRIMARY_COLOR }]}
+            onPress={() => setSelectedCategory(cat.id)}
+          >
+            <MaterialCommunityIcons name={cat.icon} size={20} color={selectedCategory === cat.id ? '#FFF' : cat.color} />
+            <Text style={[styles.pillLabel, selectedCategory === cat.id && { color: '#FFF' }]}>{cat.title}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </GlassCard>
+  );
+
+  const Step3Logistics = () => (
+    <GlassCard 
+      title="3. Logistics" 
+      subtitle="Detailed Schedule"
+      actionLabel="Continue"
+      onAction={nextStep}
+    >
+      <Controller
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <TextInput 
+            label="Location" mode="outlined" onChangeText={onChange} value={value} style={styles.glassInput}
+            left={<TextInput.Icon icon="map-marker" />}
+            right={<TextInput.Icon icon="crosshairs-gps" onPress={() => setValue('location', 'Current Location')} />}
+          />
+        )}
+        name="location"
+      />
+      <View style={styles.row}>
+        <View flex={1}>
+          <Controller control={control} render={({ field: { onChange, value } }) => (<TextInput label="Date" mode="outlined" value={value} onChangeText={onChange} style={styles.glassInput} />)} name="date" />
+        </View>
+        <View flex={1}>
+          <Controller control={control} render={({ field: { onChange, value } }) => (<TextInput label="Time" mode="outlined" value={value} onChangeText={onChange} style={styles.glassInput} />)} name="time" />
+        </View>
+      </View>
+      <Text style={styles.fieldLabel}>Est. Duration</Text>
+      <SegmentedButtons
+        value={formValues.duration}
+        onValueChange={val => setValue('duration', val)}
+        theme={{ colors: { secondaryContainer: PRIMARY_COLOR + '20' }}}
+        buttons={[
+          { value: '1-2h', label: '< 2h' },
+          { value: '2-4h', label: '2-4h' },
+          { value: 'all-day', label: 'Full Day' },
+        ]}
+        style={styles.segmented}
+      />
+    </GlassCard>
+  );
+
+  const Step4Volunteers = () => (
+    <GlassCard 
+      title="4. Volunteers" 
+      subtitle="Skills and Gear"
+      actionLabel="Continue"
+      onAction={nextStep}
+    >
+      <View style={styles.stepperRow}>
+        <Text style={styles.stepperLabel}>👥 Needed</Text>
+        <View style={styles.stepperActions}>
+          <IconButton icon="minus" size={24} mode="contained" containerColor="rgba(0,0,0,0.05)" onPress={() => setValue('volunteers', Math.max(1, formValues.volunteers - 1))} />
+          <Text style={styles.stepperValue}>{formValues.volunteers}</Text>
+          <IconButton icon="plus" size={24} mode="contained" containerColor="rgba(0,0,0,0.05)" onPress={() => setValue('volunteers', Math.min(50, formValues.volunteers + 1))} />
+        </View>
+      </View>
+      <Divider style={{ marginVertical: 15 }} />
+      <Text style={styles.fieldLabel}>Equipment Profile</Text>
+      <RadioButton.Group onValueChange={val => setValue('equipment', val)} value={formValues.equipment}>
+        <View style={styles.row}>
+          <View style={styles.radioBlock}><RadioButton value="none" color={PRIMARY_COLOR} /><Text>None</Text></View>
+          <View style={styles.radioBlock}><RadioButton value="provided" color={PRIMARY_COLOR} /><Text>Provided</Text></View>
+          <View style={styles.radioBlock}><RadioButton value="bring" color={PRIMARY_COLOR} /><Text>Bring</Text></View>
+        </View>
+      </RadioButton.Group>
+      <Divider style={{ marginVertical: 15 }} />
+      <Text style={styles.fieldLabel}>Required Skills</Text>
+      <View style={styles.pillContainer}>
+        {SKILLS.map(skill => (
+          <TouchableOpacity 
+            key={skill} 
+            style={[styles.smallPill, selectedSkills.includes(skill) && { backgroundColor: '#4B5563' }]}
+            onPress={() => toggleSkill(skill)}
+          >
+            <Text style={[styles.smallPillLabel, selectedSkills.includes(skill) && { color: '#FFF' }]}>{skill}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </GlassCard>
+  );
+
+  const Step5Details = () => (
+    <GlassCard 
+      title="5. Details" 
+      subtitle="Final specifics"
+      actionLabel="Preview Request"
+      onAction={nextStep}
+    >
+      <Controller
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <TextInput label="Preferred Language" mode="outlined" onChangeText={onChange} value={value} style={styles.glassInput} left={<TextInput.Icon icon="translate" />} />
+        )}
+        name="language"
+      />
+      <Text style={styles.fieldLabel}>Contact Method</Text>
+      <RadioButton.Group onValueChange={val => setValue('contactMethod', val)} value={formValues.contactMethod}>
+        <View style={styles.row}>
+          <View style={styles.radioBlock}><RadioButton value="in-app" color={PRIMARY_COLOR} /><Text>In-App</Text></View>
+          <View style={styles.radioBlock}><RadioButton value="phone" color={PRIMARY_COLOR} /><Text>Call</Text></View>
+          <View style={styles.radioBlock}><RadioButton value="email" color={PRIMARY_COLOR} /><Text>Email</Text></View>
+        </View>
+      </RadioButton.Group>
+      <Divider style={{ marginVertical: 15 }} />
+      <View style={{ height: 100 }}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={[{ id: 'add' }, ...media]}
+          renderItem={({ item }) => item.id === 'add' ? (
+            <TouchableOpacity style={styles.addPhotoGlass} onPress={addPhoto}>
+              <MaterialCommunityIcons name="camera-plus" size={28} color={PRIMARY_COLOR} />
+            </TouchableOpacity>
+          ) : (
+            <Image source={{ uri: item.uri }} style={styles.mediaFrame} />
+          )}
+          keyExtractor={item => item.id}
+        />
+      </View>
+    </GlassCard>
+  );
+
+  const Step6Preview = () => (
+    <GlassCard 
+      title="Broadcast" 
+      subtitle="Verify your request"
+      actionLabel="Blast Request"
+      onAction={handleFinalSubmit}
+    >
+        <View style={[styles.urgencyBadge, { backgroundColor: formValues.urgency === 'high' ? '#EF4444' : PRIMARY_COLOR }]}>
+          <Text style={{ color: '#FFF', fontWeight: 'bold', fontSize: 10, textTransform: 'uppercase' }}>{formValues.urgency} Urgency</Text>
+        </View>
+        <Text style={styles.previewTitle}>{formValues.title}</Text>
+        <Text style={styles.previewDesc}>{formValues.description}</Text>
+        <Divider style={{ marginVertical: 15 }} />
+        
+        <View style={styles.metaGrid}>
+          <View style={styles.metaRow}><MaterialCommunityIcons name="map-marker" size={16} /><Text style={styles.metaText}>{formValues.location}</Text></View>
+          <View style={styles.metaRow}><MaterialCommunityIcons name="clock-outline" size={16} /><Text style={styles.metaText}>{formValues.duration}</Text></View>
+          <View style={styles.metaRow}><MaterialCommunityIcons name="calendar-lock" size={16} /><Text style={styles.metaText}>{formValues.date} @ {formValues.time}</Text></View>
+          <View style={styles.metaRow}><MaterialCommunityIcons name="account-group" size={16} /><Text style={styles.metaText}>{formValues.volunteers} Volunteers ({formValues.equipment})</Text></View>
+          <View style={styles.metaRow}><MaterialCommunityIcons name="translate" size={16} /><Text style={styles.metaText}>{formValues.language}</Text></View>
+        </View>
+        
+        {selectedSkills.length > 0 && (
+          <Text style={styles.previewSubtext}>Required Skills: {selectedSkills.join(', ')}</Text>
+        )}
+    </GlassCard>
+  );
 
   return (
     <View style={styles.container}>
-      {/* Header Overlay */}
-      <View style={styles.header}>
-        <IconButton 
-          icon="arrow-left" 
-          size={24} 
-          onPress={() => navigation.goBack()} 
-          containerColor="rgba(255,255,255,0.9)"
-          iconColor="#1A1C1E"
-        />
-        <Text variant="titleLarge" style={styles.headerTitle}>Create Help Request</Text>
-        <View style={{ width: 48 }} />
+      <MeshBackground />
+      
+      {/* Header with Progress Bar */}
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
+        <View style={styles.headerTop}>
+          <IconButton icon="arrow-left" onPress={prevStep} />
+          <Text style={styles.headerText}>Create Help Request</Text>
+          <View width={48} />
+        </View>
+        <ProgressBar progress={currentStep / 6} color={PRIMARY_COLOR} style={styles.progressBar} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Step Indicator (Visual Only) */}
-        <View style={styles.stepContainer}>
-          <View style={[styles.stepDot, { backgroundColor: theme.colors.primary }]} />
-          <View style={styles.stepLine} />
-          <View style={styles.stepDot} />
-          <View style={styles.stepLine} />
-          <View style={styles.stepDot} />
-        </View>
-
-        {/* 1. Basic Information */}
-        <View style={styles.section}>
-          <Text variant="titleMedium" style={styles.sectionTitle}>1. Basic Information</Text>
-          <Card style={styles.formCard}>
-            <View style={styles.cardPadding}>
-              <Controller
-                control={control}
-                rules={{ required: 'Short title is required' }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    label="What do you need help with?"
-                    placeholder="e.g. Help with grocery shopping"
-                    mode="flat"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    error={!!errors.title}
-                    style={styles.input}
-                    activeUnderlineColor={theme.colors.primary}
-                    left={<TextInput.Icon icon="lead-pencil" color={theme.colors.primary} />}
-                  />
-                )}
-                name="title"
-              />
-              {errors.title && <HelperText type="error">{errors.title.message}</HelperText>}
-
-              <Divider style={styles.inputDivider} />
-
-              <Controller
-                control={control}
-                rules={{ required: 'Details are important' }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    label="Details & Special Instructions"
-                    placeholder="Provide context for our volunteers..."
-                    mode="flat"
-                    multiline
-                    numberOfLines={4}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    error={!!errors.description}
-                    style={[styles.input, { minHeight: 120 }]}
-                    activeUnderlineColor={theme.colors.primary}
-                  />
-                )}
-                name="description"
-              />
-              {errors.description && <HelperText type="error">{errors.description.message}</HelperText>}
-            </View>
-          </Card>
-        </View>
-
-        {/* 2. Help Category */}
-        <View style={styles.section}>
-          <Text variant="titleMedium" style={styles.sectionTitle}>2. Select Category</Text>
-          <View style={styles.categoryGrid}>
-            {CATEGORIES.map(cat => (
-              <TouchableOpacity
-                key={cat.id}
-                style={[
-                  styles.categoryBtn,
-                  selectedCategory === cat.id && { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary + '10' }
-                ]}
-                onPress={() => setSelectedCategory(cat.id)}
-              >
-                <View style={[styles.categoryIcon, { backgroundColor: cat.color + '15' }]}>
-                  <MaterialCommunityIcons name={cat.icon} size={24} color={cat.color} />
-                </View>
-                <Text style={[styles.categoryLabel, selectedCategory === cat.id && { color: theme.colors.primary }]}>{cat.title}</Text>
-                {selectedCategory === cat.id && (
-                  <MaterialCommunityIcons name="check-circle" size={16} color={theme.colors.primary} style={styles.checkIcon} />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* 3. Location & Timing */}
-        <View style={styles.section}>
-          <Text variant="titleMedium" style={styles.sectionTitle}>3. Location & Schedule</Text>
-          <Card style={styles.formCard}>
-            <View style={styles.cardPadding}>
-              <Controller
-                control={control}
-                rules={{ required: 'Location is required' }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    label="Where should volunteers go?"
-                    mode="flat"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    style={styles.input}
-                    activeUnderlineColor={theme.colors.primary}
-                    left={<TextInput.Icon icon="map-marker-outline" color={theme.colors.primary} />}
-                    right={<TextInput.Icon icon="crosshairs-gps" color="#9CA3AF" />}
-                  />
-                )}
-                name="location"
-              />
-              
-              <Divider style={styles.inputDivider} />
-
-              <View style={styles.row}>
-                <View flex={1}>
-                  <Controller
-                    control={control}
-                    render={({ field: { onChange, onBlur, value } }) => (
-                      <TextInput
-                        label="Date Needed"
-                        mode="flat"
-                        onBlur={onBlur}
-                        onChangeText={onChange}
-                        value={value}
-                        style={styles.input}
-                        activeUnderlineColor={theme.colors.primary}
-                        left={<TextInput.Icon icon="calendar-outline" color={theme.colors.primary} />}
-                      />
-                    )}
-                    name="date"
-                  />
-                </View>
-                <View style={styles.verticalDivider} />
-                <View flex={1}>
-                  <Controller
-                    control={control}
-                    render={({ field: { onChange, onBlur, value } }) => (
-                      <TextInput
-                        label="Volunteers"
-                        mode="flat"
-                        onBlur={onBlur}
-                        onChangeText={onChange}
-                        value={value}
-                        keyboardType="numeric"
-                        style={styles.input}
-                        activeUnderlineColor={theme.colors.primary}
-                        left={<TextInput.Icon icon="account-group-outline" color={theme.colors.primary} />}
-                      />
-                    )}
-                    name="volunteers"
-                  />
-                </View>
-              </View>
-            </View>
-          </Card>
-        </View>
-
-        {/* 4. Media Evidence */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeaderRow}>
-            <Text variant="titleMedium" style={styles.sectionTitle}>4. Media Evidence</Text>
-            <Text style={styles.optionalText}>(Optional)</Text>
-          </View>
-          <Card style={styles.mediaCard}>
-            <View style={styles.mediaPadding}>
-              <FlatList
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={[{ id: 'add-btn' }, ...media]}
-                keyExtractor={item => item.id}
-                renderItem={({ item }) => {
-                  if (item.id === 'add-btn') {
-                    return (
-                      <TouchableOpacity style={styles.addMediaBtn} onPress={addPhoto}>
-                        <MaterialCommunityIcons name="camera-plus-outline" size={32} color={theme.colors.primary} />
-                        <Text style={[styles.addMediaText, { color: theme.colors.primary }]}>Add Photo</Text>
-                      </TouchableOpacity>
-                    );
-                  }
-                  return (
-                    <View style={styles.photoContainer}>
-                      <Image source={{ uri: item.uri }} style={styles.photo} />
-                      <TouchableOpacity 
-                        style={styles.removePhotoBtn} 
-                        onPress={() => removePhoto(item.id)}
-                      >
-                        <MaterialCommunityIcons name="close-circle" size={24} color="#EF4444" />
-                      </TouchableOpacity>
-                    </View>
-                  );
-                }}
-              />
-              <Text variant="bodySmall" style={styles.mediaHint}>
-                Attach photos of the situation to help volunteers better prepare.
-              </Text>
-            </View>
-          </Card>
-        </View>
-
-        <Button 
-          mode="contained" 
-          onPress={handleSubmit(onSubmit)} 
-          style={styles.submitBtn}
-          contentStyle={styles.submitBtnContent}
-          labelStyle={styles.submitBtnLabel}
-          icon="check-decagram"
-        >
-          Publish Help Request
-        </Button>
-
-        <View style={{ height: 100 }} />
-      </ScrollView>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <Animated.View style={[styles.main, { opacity: fadeAnim }]}>
+          {currentStep === 1 && <Step1Overview />}
+          {currentStep === 2 && <Step2Category />}
+          {currentStep === 3 && <Step3Logistics />}
+          {currentStep === 4 && <Step4Volunteers />}
+          {currentStep === 5 && <Step5Details />}
+          {currentStep === 6 && <Step6Preview />}
+        </Animated.View>
+      </KeyboardAvoidingView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFF9F0',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 50,
-    paddingHorizontal: 15,
-    paddingBottom: 10,
-    backgroundColor: 'transparent',
-    zIndex: 100,
-  },
-  headerTitle: {
-    fontWeight: '900',
-    color: '#1A1C1E',
-  },
-  scrollContent: {
-    paddingTop: 20,
-  },
-  stepContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 30,
-    paddingHorizontal: 40,
-  },
-  stepDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#E5E7EB',
-  },
-  stepLine: {
-    flex: 1,
-    height: 3,
-    backgroundColor: '#E5E7EB',
-    marginHorizontal: 10,
-    borderRadius: 2,
-  },
-  section: {
-    marginBottom: 25,
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    fontWeight: '900',
-    marginBottom: 12,
-    color: '#1A1C1E',
-    fontSize: 18,
-  },
-  formCard: {
-    borderRadius: 28,
-    backgroundColor: '#FFF',
-    elevation: 3,
-    shadowColor: '#1E4D2B',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    overflow: 'hidden',
-  },
-  cardPadding: {
-    padding: 20,
-  },
-  input: {
-    backgroundColor: 'transparent',
-    fontSize: 16,
-    paddingHorizontal: 0,
-  },
-  inputDivider: {
-    marginVertical: 15,
-    backgroundColor: '#F3F4F6',
-  },
-  categoryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  categoryBtn: {
-    width: '48%',
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-    elevation: 2,
-    position: 'relative',
-  },
-  categoryIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  categoryLabel: {
-    fontWeight: '800',
-    color: '#4B5563',
-    fontSize: 13,
-  },
-  checkIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  verticalDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: '#F3F4F6',
-    marginHorizontal: 15,
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  optionalText: {
-    color: '#9CA3AF',
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  mediaCard: {
-    borderRadius: 28,
-    backgroundColor: '#FFF',
-    elevation: 3,
-  },
-  mediaPadding: {
-    padding: 16,
-  },
-  addMediaBtn: {
-    width: 100,
-    height: 100,
-    borderRadius: 20,
-    backgroundColor: '#F0F9FF',
-    borderWidth: 2,
-    borderColor: 'rgba(30, 77, 43, 0.1)',
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  addMediaText: {
-    fontSize: 10,
-    fontWeight: '900',
-    marginTop: 4,
-    textTransform: 'uppercase',
-  },
-  photoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 20,
-    marginRight: 15,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  photo: {
-    width: '100%',
-    height: '100%',
-  },
-  removePhotoBtn: {
-    position: 'absolute',
-    top: 5,
-    right: 5,
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-  },
-  mediaHint: {
-    color: '#9CA3AF',
-    marginTop: 12,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-  submitBtn: {
-    marginHorizontal: 20,
-    marginTop: 10,
-    borderRadius: 24,
-    backgroundColor: '#1E4D2B',
-    elevation: 8,
-    shadowColor: '#1E4D2B',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-  },
-  submitBtnContent: {
-    height: 64,
-  },
-  submitBtnLabel: {
-    fontSize: 18,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  }
+  container: { flex: 1 },
+  blob: { position: 'absolute', borderRadius: 200, opacity: 0.6 },
+  header: { paddingHorizontal: 10, zIndex: 10 },
+  headerTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  headerText: { fontSize: 18, fontWeight: '900', color: '#1A1C1E', letterSpacing: -0.5 },
+  progressBar: { height: 4, borderRadius: 2, marginHorizontal: 20, marginTop: 5 },
+  main: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  glassContainer: { width: SCREEN_WIDTH * 0.9, height: SCREEN_HEIGHT * 0.65, alignItems: 'center' },
+  glassCard: { width: '100%', height: '100%', borderRadius: 32, padding: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)', overflow: 'hidden' },
+  cardHeader: { marginBottom: 15 },
+  cardTitle: { fontSize: 24, fontWeight: '900', color: '#1A1C1E' },
+  cardSubtitle: { fontSize: 13, fontWeight: 'bold', color: '#6B7280', textTransform: 'uppercase', marginTop: 4 },
+  cardScroll: { flex: 1, width: '100%' },
+  cardContent: { paddingBottom: 20 },
+  cardFooter: { marginTop: 15, width: '100%' },
+  fieldLabel: { fontSize: 11, fontWeight: '900', color: '#6B7280', textTransform: 'uppercase', marginBottom: 8, letterSpacing: 1 },
+  glassInput: { backgroundColor: 'rgba(255,255,255,0.4)', marginBottom: 5 },
+  segmented: { marginBottom: 15 },
+  charCount: { alignSelf: 'flex-end', fontSize: 10, color: '#6B7280' },
+  pillContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  glassPill: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.8)', borderWidth: 1, borderColor: 'rgba(0,0,0,0.05)' },
+  pillLabel: { marginLeft: 8, fontWeight: '900', color: '#4B5563', fontSize: 14 },
+  row: { flexDirection: 'row', gap: 12 },
+  stepperRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  stepperLabel: { fontSize: 16, fontWeight: '900', color: '#1A1C1E' },
+  stepperActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  stepperValue: { fontSize: 22, fontWeight: '900', color: PRIMARY_COLOR },
+  smallPill: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.8)' },
+  smallPillLabel: { fontSize: 12, fontWeight: '700', color: '#4B5563' },
+  addPhotoGlass: { width: 80, height: 80, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.6)', borderStyle: 'dashed', borderWidth: 2, borderColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center', marginRight: 15 },
+  mediaFrame: { width: 80, height: 80, borderRadius: 24, marginRight: 15 },
+  radioBlock: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  previewTitle: { fontSize: 26, fontWeight: '900', color: '#1A1C1E' },
+  previewDesc: { fontSize: 14, color: '#4B5563', marginTop: 8, lineHeight: 20 },
+  urgencyBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start', marginBottom: 10 },
+  metaGrid: { gap: 10 },
+  metaRow: { flexDirection: 'row', alignItems: 'center' },
+  metaText: { marginLeft: 10, fontSize: 14, fontWeight: '700', color: '#1F2937' },
+  previewSubtext: { marginTop: 15, fontSize: 12, color: '#6B7280', fontStyle: 'italic' },
+  actionBtn: { borderRadius: 28, backgroundColor: PRIMARY_COLOR, elevation: 12, shadowColor: PRIMARY_COLOR, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 12 },
+  actionBtnContent: { height: 60 }
 });

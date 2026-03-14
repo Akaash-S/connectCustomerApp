@@ -1,30 +1,59 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
+import React, { useEffect, useRef } from 'react';
+import { View, StyleSheet, Dimensions, Animated, Easing } from 'react-native';
+import { Text } from 'react-native-paper';
+import { BlurView } from 'expo-blur';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const SplashScreen = ({ navigation }) => {
-  const theme = useTheme();
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // Entrance animation
+    Animated.parallel([
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.out(Easing.back(1.5)),
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
     const timer = setTimeout(() => {
       navigation.replace('Login');
-    }, 2500); // 2.5 seconds splash
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
 
+  const MeshBackground = () => (
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFF9F0' }]}>
+      <View style={[styles.blob, { top: -100, left: -50, backgroundColor: 'rgba(217, 119, 6, 0.2)', width: 350, height: 350 }]} />
+      <View style={[styles.blob, { bottom: -50, right: -50, backgroundColor: 'rgba(16, 185, 129, 0.2)', width: 450, height: 450 }]} />
+    </View>
+  );
+
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={styles.content}>
-        <View style={[styles.logoPlaceholder, { backgroundColor: theme.colors.primary }]}>
-          <Text variant="headlineLarge" style={styles.logoText}>C</Text>
-        </View>
-        <Text variant="displaySmall" style={styles.appName}>CONNECT</Text>
-        <Text variant="bodyLarge" style={styles.tagline}>
-          Connecting Communities Through Volunteering
-        </Text>
-      </View>
+    <View style={styles.container}>
+      <MeshBackground />
+      
+      <Animated.View style={[styles.logoContainer, { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }]}>
+        <BlurView intensity={60} tint="light" style={styles.glassLogo}>
+          <View style={styles.iconCircle}>
+            <Text style={styles.iconText}>C</Text>
+          </View>
+          <Text style={styles.appName}>CONNECT</Text>
+          <Text style={styles.tagline}>COMMUNITY POWERED</Text>
+        </BlurView>
+      </Animated.View>
+
       <View style={styles.footer}>
-        <ActivityIndicator size="large" color={theme.colors.secondary} />
+        <Text style={styles.footerText}>BE THE CHANGE</Text>
       </View>
     </View>
   );
@@ -36,35 +65,65 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  content: {
-    alignItems: 'center',
+  blob: {
+    position: 'absolute',
+    borderRadius: 250,
+    opacity: 0.6,
   },
-  logoPlaceholder: {
-    width: 100,
-    height: 100,
+  logoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  glassLogo: {
+    paddingHorizontal: 40,
+    paddingVertical: 40,
+    borderRadius: 40,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  iconCircle: {
+    width: 90,
+    height: 90,
     borderRadius: 30,
+    backgroundColor: '#D97706',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
-    elevation: 4,
+    elevation: 10,
+    shadowColor: '#D97706',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
   },
-  logoText: {
+  iconText: {
     color: '#FFF',
-    fontWeight: 'bold',
+    fontSize: 48,
+    fontWeight: '900',
   },
   appName: {
-    fontWeight: 'bold',
-    letterSpacing: 2,
-    color: '#1E4D2B',
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#1A1C1E',
+    letterSpacing: 4,
   },
   tagline: {
-    marginTop: 10,
+    fontSize: 10,
+    fontWeight: '900',
     color: '#6B7280',
-    textAlign: 'center',
-    paddingHorizontal: 40,
+    marginTop: 8,
+    letterSpacing: 2,
   },
   footer: {
     position: 'absolute',
-    bottom: 50,
+    bottom: 60,
+  },
+  footerText: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#D97706',
+    letterSpacing: 5,
+    opacity: 0.6,
   }
 });
