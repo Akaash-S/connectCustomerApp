@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Text, Button, useTheme, IconButton } from 'react-native-paper';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 export const LoginScreen = ({ navigation }) => {
   const theme = useTheme();
@@ -31,7 +32,7 @@ export const LoginScreen = ({ navigation }) => {
           buttonColor="#FFF"
           textColor="#444"
           icon={({ size, color }) => (
-            <IconButton icon="google" size={24} iconColor="#DB4437" />
+            <MaterialCommunityIcons name="google" size={24} color="#DB4437" />
           )}
         >
           Continue with Google

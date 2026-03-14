@@ -1,20 +1,22 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { List, Divider, Text, Button } from 'react-native-paper';
+import { Divider, Text, Button } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const MenuItem = ({ title, icon, onPress }) => (
-  <List.Item
-    title={title}
-    titleStyle={styles.menuTitle}
-    left={props => (
+  <TouchableOpacity 
+    style={styles.menuItemContainer} 
+    onPress={onPress}
+    activeOpacity={0.6}
+  >
+    <View style={styles.menuItemLeft}>
       <View style={styles.iconContainer}>
         <MaterialCommunityIcons name={icon} size={22} color="#9CA3AF" />
       </View>
-    )}
-    onPress={onPress}
-    style={styles.listItem}
-  />
+      <Text style={styles.menuTitle}>{title}</Text>
+    </View>
+    <MaterialCommunityIcons name="chevron-right" size={24} color="#D1D5DB" />
+  </TouchableOpacity>
 );
 
 export const SupportMenu = () => {
@@ -61,20 +63,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F3F4F6',
   },
-  listItem: {
-    paddingVertical: 4,
+  menuItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  menuItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   menuTitle: {
     fontWeight: '500',
     fontSize: 15,
     color: '#6B7280',
+    marginLeft: 15,
   },
   iconContainer: {
     width: 36,
     height: 36,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
   },
   divider: {
     backgroundColor: '#F9FAFB',

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList } from 'react-native';
-import { Text, Card, Avatar, useTheme, ProgressBar, Button, IconButton, Divider, Chip, List } from 'react-native-paper';
+import { Text, Card, Avatar, useTheme, ProgressBar, Button, IconButton, Divider, Chip } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const ACTIVITY_STATS = [
@@ -114,21 +114,23 @@ export const RequestsScreen = ({ navigation }) => {
         </View>
         {VOLUNTEER_REPORTS.map(report => (
           <Card key={report.id} style={styles.reportCard}>
-            <List.Item
-              title={report.title}
-              description={`Completed by ${report.volunteer} • ${report.date}`}
-              left={props => <Avatar.Icon {...props} icon={report.icon} size={40} style={{ backgroundColor: '#EEF2FF' }} color="#4F46E5" />}
-              right={props => (
-                <Button 
-                  mode="outlined" 
-                  compact 
-                  style={styles.viewReportBtn}
-                  onPress={() => navigation.navigate('ReportDetails', { reportId: report.id })}
-                >
-                  View Report
-                </Button>
-              )}
-            />
+            <View style={styles.reportItemContainer}>
+              <View style={styles.reportLeft}>
+                <Avatar.Icon icon={report.icon} size={40} style={{ backgroundColor: '#EEF2FF' }} color="#4F46E5" />
+                <View style={styles.reportTextInfo}>
+                  <Text variant="titleMedium" style={styles.reportItemTitle}>{report.title}</Text>
+                  <Text variant="bodySmall" style={styles.reportItemSub}>{`Completed by ${report.volunteer} • ${report.date}`}</Text>
+                </View>
+              </View>
+              <Button 
+                mode="outlined" 
+                compact 
+                style={styles.viewReportBtn}
+                onPress={() => navigation.navigate('ReportDetails', { reportId: report.id })}
+              >
+                View
+              </Button>
+            </View>
           </Card>
         ))}
       </View>
@@ -289,10 +291,29 @@ const styles = StyleSheet.create({
     elevation: 2,
     overflow: 'hidden',
   },
+  reportItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+  },
+  reportLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  reportTextInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  reportItemTitle: {
+    fontWeight: 'bold',
+  },
+  reportItemSub: {
+    color: '#6B7280',
+  },
   viewReportBtn: {
-    alignSelf: 'center',
     borderRadius: 8,
-    marginRight: -10,
   },
   eventMiniCard: {
     marginHorizontal: 20,
