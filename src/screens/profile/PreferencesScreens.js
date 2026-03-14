@@ -48,7 +48,7 @@ export const PreferencesScreens = ({ route, navigation }) => {
   const PreferenceItem = ({ title, subtitle, icon, color }) => {
     const [enabled, setEnabled] = useState(true);
     return (
-      <TouchableOpacity style={styles.item} onPress={() => setEnabled(!enabled)}>
+      <TouchableOpacity style={styles.item} activeOpacity={1} onPress={() => setEnabled(!enabled)}>
         <View style={styles.itemLeft}>
           <View style={[styles.iconBox, { backgroundColor: color + '15' }]}>
             <MaterialCommunityIcons name={icon} size={22} color={color} />
@@ -68,7 +68,7 @@ export const PreferencesScreens = ({ route, navigation }) => {
   };
 
   const SelectionItem = ({ title, selected }) => (
-    <TouchableOpacity style={styles.selectionItem}>
+    <TouchableOpacity style={styles.selectionItem} activeOpacity={1}>
       <Text style={[styles.selectionText, selected && styles.selectionTextActive]}>{title}</Text>
       {selected && <MaterialCommunityIcons name="check-circle" size={24} color="#D97706" />}
     </TouchableOpacity>
@@ -85,13 +85,17 @@ export const PreferencesScreens = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   section: {
-    backgroundColor: '#FFF',
-    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 30,
     overflow: 'hidden',
     padding: 10,
-    elevation: 2,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#F1F5F9',
   },
   item: {
     flexDirection: 'row',

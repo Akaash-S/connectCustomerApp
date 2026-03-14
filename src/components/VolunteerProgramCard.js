@@ -10,7 +10,7 @@ export const VolunteerProgramCard = ({ onApply, isVolunteer }) => {
   return (
     <View style={styles.container}>
       <Text variant="titleMedium" style={styles.sectionHeader}>Volunteer Program</Text>
-      <TouchableOpacity activeOpacity={0.9} onPress={onApply}>
+      <TouchableOpacity activeOpacity={1} onPress={onApply}>
         <BlurView intensity={20} tint="light" style={styles.promoCard}>
           <View style={styles.content}>
             <View style={styles.iconCircle}>
@@ -47,12 +47,17 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   promoCard: {
-    backgroundColor: 'rgba(217, 119, 6, 0.9)', // CONNECT primary theme
-    borderRadius: 28,
+    backgroundColor: 'rgba(217, 119, 6, 0.95)', 
+    borderRadius: 30,
     padding: 24,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderColor: 'rgba(255,255,255,0.3)',
+    elevation: 8,
+    shadowColor: '#D97706',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
   },
   content: {
     flexDirection: 'row',

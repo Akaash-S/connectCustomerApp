@@ -32,9 +32,10 @@ export const SplashScreen = ({ navigation }) => {
   }, []);
 
   const MeshBackground = () => (
-    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFF9F0' }]}>
-      <View style={[styles.blob, { top: -100, left: -50, backgroundColor: 'rgba(217, 119, 6, 0.2)', width: 350, height: 350 }]} />
-      <View style={[styles.blob, { bottom: -50, right: -50, backgroundColor: 'rgba(16, 185, 129, 0.2)', width: 450, height: 450 }]} />
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFFFFF' }]}>
+      <View style={[styles.blob, { top: -150, left: -100, backgroundColor: 'rgba(217, 119, 6, 0.25)', width: 500, height: 500 }]} />
+      <View style={[styles.blob, { bottom: -100, right: -150, backgroundColor: 'rgba(16, 185, 129, 0.2)', width: 600, height: 600 }]} />
+      <View style={[styles.blob, { top: '30%', right: -100, backgroundColor: 'rgba(59, 130, 246, 0.1)', width: 300, height: 300 }]} />
     </View>
   );
 
@@ -75,13 +76,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   glassLogo: {
-    paddingHorizontal: 40,
-    paddingVertical: 40,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 48,
+    paddingVertical: 48,
     borderRadius: 40,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.8)',
+    borderColor: '#F1F5F9',
     alignItems: 'center',
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.1,
+    shadowRadius: 30,
+    elevation: 8,
   },
   iconCircle: {
     width: 90,
@@ -103,17 +110,19 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   appName: {
-    fontSize: 32,
+    fontSize: 40,
     fontWeight: '900',
     color: '#1A1C1E',
-    letterSpacing: 4,
+    letterSpacing: 6,
+    textTransform: 'uppercase',
   },
   tagline: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '900',
-    color: '#6B7280',
-    marginTop: 8,
-    letterSpacing: 2,
+    color: '#9CA3AF',
+    marginTop: 12,
+    letterSpacing: 3,
+    opacity: 0.8,
   },
   footer: {
     position: 'absolute',

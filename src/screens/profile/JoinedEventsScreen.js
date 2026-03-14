@@ -13,7 +13,8 @@ const EventCard = ({ item }) => {
   const isCompleted = item.status === 'Attended';
   
   return (
-    <Surface style={styles.card} elevation={2}>
+    <TouchableOpacity activeOpacity={1}>
+      <Surface style={styles.card} elevation={2}>
       <View style={styles.cardHeader}>
         <View style={styles.ngoInfo}>
           <Avatar.Text size={32} label={item.ngo[0]} style={{ backgroundColor: '#D97706' }} labelStyle={{ fontSize: 14, fontWeight: 'bold' }} />
@@ -37,6 +38,7 @@ const EventCard = ({ item }) => {
         </View>
       </View>
     </Surface>
+  </TouchableOpacity>
   );
 };
 
@@ -57,11 +59,16 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   card: {
-    backgroundColor: '#FFF',
-    borderRadius: 24,
-    padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 30,
+    padding: 24,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
   },
   cardHeader: {
     flexDirection: 'row',

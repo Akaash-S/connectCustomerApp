@@ -15,7 +15,7 @@ export const SecurityPrivacyScreens = ({ route, navigation }) => {
       <SecurityItem title="Device Sessions" subtitle="2 active sessions" icon="cellphone-link" color="#3B82F6" />
       
       <Text style={styles.subHeader}>Account Actions</Text>
-      <TouchableOpacity style={styles.dangerItem}>
+      <TouchableOpacity style={styles.dangerItem} activeOpacity={1}>
         <View style={styles.dangerLeft}>
           <MaterialCommunityIcons name="account-remove-outline" size={24} color="#EF4444" />
           <Text style={styles.dangerText}>Delete Account</Text>
@@ -33,14 +33,14 @@ export const SecurityPrivacyScreens = ({ route, navigation }) => {
       <VisibilityItem title="Friends Only" subtitle="Visible to approved connections" icon="account-group-outline" />
       
       <Text style={styles.subHeader}>Activity History</Text>
-      <TouchableOpacity style={styles.actionBtn}>
+      <TouchableOpacity style={styles.actionBtn} activeOpacity={1}>
         <Text style={styles.actionBtnText}>Clear Search History</Text>
       </TouchableOpacity>
     </View>
   );
 
   const SecurityItem = ({ title, subtitle, icon, color }) => (
-    <TouchableOpacity style={styles.item}>
+    <TouchableOpacity style={styles.item} activeOpacity={1}>
       <View style={styles.itemLeft}>
         <View style={[styles.iconBox, { backgroundColor: color + '15' }]}>
           <MaterialCommunityIcons name={icon} size={22} color={color} />
@@ -55,7 +55,7 @@ export const SecurityPrivacyScreens = ({ route, navigation }) => {
   );
 
   const VisibilityItem = ({ title, subtitle, icon, selected }) => (
-    <TouchableOpacity style={styles.visibilityItem}>
+    <TouchableOpacity style={styles.visibilityItem} activeOpacity={1}>
       <MaterialCommunityIcons name={icon} size={24} color={selected ? "#D97706" : "#9CA3AF"} />
       <View style={{ flex: 1, marginLeft: 15 }}>
         <Text style={[styles.itemTitle, selected && { color: '#D97706' }]}>{title}</Text>
@@ -74,13 +74,17 @@ export const SecurityPrivacyScreens = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFF',
-    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 30,
     overflow: 'hidden',
     padding: 10,
-    elevation: 2,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#F1F5F9',
   },
   subHeader: {
     padding: 15,

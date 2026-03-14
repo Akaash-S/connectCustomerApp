@@ -35,10 +35,10 @@ export const LoginScreen = ({ navigation }) => {
   };
 
   const MeshBackground = () => (
-    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFF9F0' }]}>
-      <View style={[styles.blob, { top: -100, left: -50, backgroundColor: 'rgba(217, 119, 6, 0.15)', width: 350, height: 350 }]} />
-      <View style={[styles.blob, { bottom: SCREEN_HEIGHT * 0.2, right: -100, backgroundColor: 'rgba(16, 185, 129, 0.12)', width: 400, height: 400 }]} />
-      <View style={[styles.blob, { top: SCREEN_HEIGHT * 0.4, left: -100, backgroundColor: 'rgba(59, 130, 246, 0.08)', width: 250, height: 250 }]} />
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFFFFF' }]}>
+      <View style={[styles.blob, { top: -200, left: -100, backgroundColor: 'rgba(217, 119, 6, 0.2)', width: 600, height: 600 }]} />
+      <View style={[styles.blob, { bottom: SCREEN_HEIGHT * 0.1, right: -150, backgroundColor: 'rgba(16, 185, 129, 0.15)', width: 700, height: 700 }]} />
+      <View style={[styles.blob, { top: SCREEN_HEIGHT * 0.3, left: -150, backgroundColor: 'rgba(59, 130, 246, 0.1)', width: 400, height: 400 }]} />
     </View>
   );
 
@@ -69,6 +69,7 @@ export const LoginScreen = ({ navigation }) => {
               style={styles.googleBtn}
               contentStyle={styles.googleBtnContent}
               labelStyle={styles.googleBtnLabel}
+              activeOpacity={1}
               icon={({ size }) => (
                 <View style={styles.googleIconCircle}>
                   <MaterialCommunityIcons name="google" size={20} color="#EA4335" />
@@ -78,7 +79,7 @@ export const LoginScreen = ({ navigation }) => {
               Continue with Google
             </Button>
             
-            <TouchableOpacity style={styles.alternateOption}>
+            <TouchableOpacity style={styles.alternateOption} activeOpacity={1}>
               <Text style={styles.alternateText}>Trouble signing in?</Text>
             </TouchableOpacity>
           </View>
@@ -114,12 +115,18 @@ const styles = StyleSheet.create({
   },
   glassCard: {
     width: '100%',
-    borderRadius: 40,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 48,
     padding: 32,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.8)',
+    borderColor: '#F1F5F9',
     alignItems: 'center',
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 25 },
+    shadowOpacity: 0.12,
+    shadowRadius: 40,
+    elevation: 10,
   },
   logoBadge: {
     width: 60,
@@ -155,13 +162,15 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   googleBtn: {
-    borderRadius: 20,
-    backgroundColor: '#FFF',
-    elevation: 4,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   googleBtnContent: {
     height: 64,

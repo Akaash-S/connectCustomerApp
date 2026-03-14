@@ -10,7 +10,8 @@ const NGOsData = [
 ];
 
 const SavedItem = ({ item }) => (
-  <Surface style={styles.card} elevation={2}>
+  <TouchableOpacity activeOpacity={1}>
+    <Surface style={styles.card} elevation={2}>
     <View style={styles.itemLeft}>
       <View style={styles.iconBox}>
         <MaterialCommunityIcons name={item.icon} size={28} color="#D97706" />
@@ -23,7 +24,8 @@ const SavedItem = ({ item }) => (
     <TouchableOpacity style={styles.viewBtn}>
       <Text style={styles.viewBtnText}>View NGO</Text>
     </TouchableOpacity>
-  </Surface>
+      </Surface>
+  </TouchableOpacity>
 );
 
 export const SavedItemsScreen = ({ navigation }) => {
@@ -64,14 +66,19 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   card: {
-    backgroundColor: '#FFF',
-    borderRadius: 24,
-    padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 30,
+    padding: 24,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
   },
   itemLeft: {
     flexDirection: 'row',
@@ -97,12 +104,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   viewBtn: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: '#D97706',
     paddingHorizontal: 15,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: 14,
   },
   viewBtnText: {
     color: '#D97706',

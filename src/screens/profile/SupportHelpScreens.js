@@ -35,7 +35,7 @@ export const SupportHelpScreens = ({ route, navigation }) => {
   );
 
   const HelpItem = ({ title, icon }) => (
-    <TouchableOpacity style={styles.helpItem}>
+    <TouchableOpacity style={styles.helpItem} activeOpacity={1}>
       <View style={styles.helpItemLeft}>
         <MaterialCommunityIcons name={icon} size={24} color="#D97706" />
         <Text style={styles.helpText}>{title}</Text>
@@ -53,13 +53,17 @@ export const SupportHelpScreens = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFF',
-    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 30,
     overflow: 'hidden',
     padding: 10,
-    elevation: 2,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#F1F5F9',
   },
   subHeader: {
     padding: 15,

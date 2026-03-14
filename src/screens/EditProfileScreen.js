@@ -32,7 +32,13 @@ export const EditProfileScreen = ({ navigation }) => {
         contentContainerStyle={{ paddingBottom: 40 }}
       >
         <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
-          <IconButton icon="arrow-left" mode="contained" containerColor="#FFF" onPress={() => navigation.goBack()} />
+          <IconButton 
+            icon="arrow-left" 
+            mode="contained" 
+            containerColor="#FFF" 
+            onPress={() => navigation.goBack()} 
+            activeOpacity={1}
+          />
           <Text style={styles.headerTitle}>Edit Profile</Text>
           <View width={48} />
         </View>
@@ -104,6 +110,7 @@ export const EditProfileScreen = ({ navigation }) => {
             onPress={() => navigation.goBack()} 
             style={styles.saveBtn}
             contentStyle={{ height: 60 }}
+            activeOpacity={1}
           >
             Save Changes
           </Button>
@@ -177,14 +184,18 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 20,
-    backgroundColor: '#FFF',
-    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     height: 56,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
-    paddingHorizontal: 10,
+    borderColor: '#F1F5F9',
+    paddingHorizontal: 16,
     fontSize: 15,
     fontWeight: '700',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
   },
   disabledInput: {
     backgroundColor: '#F9FAFB',

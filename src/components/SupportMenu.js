@@ -7,7 +7,7 @@ const MenuItem = ({ title, icon, onPress }) => (
   <TouchableOpacity 
     style={styles.menuItemContainer} 
     onPress={onPress}
-    activeOpacity={0.6}
+    activeOpacity={1}
   >
     <View style={styles.menuItemLeft}>
       <View style={styles.iconContainer}>
@@ -35,7 +35,7 @@ export const SupportMenu = () => {
         <MenuItem title="About CONNECT" icon="information-outline" onPress={() => {}} />
       </View>
 
-      <TouchableOpacity activeOpacity={0.8} style={styles.logoutBtn}>
+      <TouchableOpacity activeOpacity={1} style={styles.logoutBtn}>
         <MaterialCommunityIcons name="logout" size={20} color="#FFF" />
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
@@ -56,12 +56,16 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   menuCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 30,
     overflow: 'hidden',
-    elevation: 2,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#F1F5F9',
   },
   menuItemContainer: {
     flexDirection: 'row',
@@ -75,9 +79,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   menuTitle: {
-    fontWeight: '500',
+    fontWeight: '700',
     fontSize: 15,
-    color: '#6B7280',
+    color: '#4B5563',
     marginLeft: 15,
   },
   iconContainer: {

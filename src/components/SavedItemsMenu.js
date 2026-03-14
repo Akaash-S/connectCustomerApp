@@ -7,7 +7,7 @@ const MenuItem = ({ title, icon, color, onPress }) => (
   <TouchableOpacity 
     style={styles.menuItemContainer} 
     onPress={onPress}
-    activeOpacity={0.6}
+    activeOpacity={1}
   >
     <View style={styles.menuItemLeft}>
       <View style={[styles.iconContainer, { backgroundColor: color + '15' }]}>
@@ -54,12 +54,16 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   menuCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 30,
     overflow: 'hidden',
-    elevation: 2,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#F1F5F9',
   },
   menuItemContainer: {
     flexDirection: 'row',

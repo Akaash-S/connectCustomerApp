@@ -7,7 +7,7 @@ const StatCard = ({ label, value, icon, color, onPress }) => (
   <TouchableOpacity 
     style={[styles.statCard, { borderLeftColor: color, borderLeftWidth: 4 }]} 
     onPress={onPress}
-    activeOpacity={0.7}
+    activeOpacity={1}
   >
     <View style={[styles.iconBox, { backgroundColor: color + '15' }]}>
       <MaterialCommunityIcons name={icon} size={24} color={color} />
@@ -67,15 +67,17 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#FFF',
-    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
     padding: 15,
     alignItems: 'center',
-    elevation: 3,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   iconBox: {
     width: 44,

@@ -8,7 +8,8 @@ import {
   PlaceholderScreen, RequestHelpScreen, NGODetailsScreen, EventDetailsScreen,
   SplashScreen, LoginScreen, RequestDetailsScreen, ReportDetailsScreen, EditProfileScreen,
   MyRequestsScreen, JoinedEventsScreen, SavedItemsScreen, PreferencesScreens,
-  SecurityPrivacyScreens, SupportHelpScreens, LegalScreens, NotificationsScreen
+  SecurityPrivacyScreens, SupportHelpScreens, LegalScreens, NotificationsScreen,
+  VolunteerApplicationScreen
 } from '../screens';
 import { useTheme, Text } from 'react-native-paper';
 import { Dimensions } from 'react-native';
@@ -152,6 +153,7 @@ const ProfileStack = () => (
     <Stack.Screen name="SecurityPrivacy" component={SecurityPrivacyScreens} options={{ headerShown: false }} />
     <Stack.Screen name="SupportHelp" component={SupportHelpScreens} options={{ headerShown: false }} />
     <Stack.Screen name="Legal" component={LegalScreens} options={{ headerShown: false }} />
+    <Stack.Screen name="VolunteerApplication" component={VolunteerApplicationScreen} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 
