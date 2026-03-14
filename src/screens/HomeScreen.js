@@ -110,7 +110,7 @@ export const HomeScreen = ({ navigation }) => {
           </View>
 
           {/* Floating Premium Search */}
-          <View style={styles.searchWrapper}>
+          {/* <View style={styles.searchWrapper}>
             <View style={styles.premiumSearchBar}>
               <MaterialCommunityIcons name="magnify" size={22} color="#94A3B8" />
               <Text style={styles.searchText}>Search for NGOs, events, or help...</Text>
@@ -118,7 +118,7 @@ export const HomeScreen = ({ navigation }) => {
                 <MaterialCommunityIcons name="tune-variant" size={20} color="#FFF" />
               </View>
             </View>
-          </View>
+          </View> */}
         </View>
 
         {/* Urgent Help 2.0 (Deep Palette) */}

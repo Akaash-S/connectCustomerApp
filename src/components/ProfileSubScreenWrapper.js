@@ -27,6 +27,7 @@ export const ProfileSubScreenWrapper = ({ title, children, navigation, footer })
           size={24}
           onPress={() => navigation.goBack()} 
           style={styles.backBtn}
+          activeOpacity={1}
         />
         <Text variant="titleLarge" style={styles.headerTitle}>{title}</Text>
         <View width={48} />

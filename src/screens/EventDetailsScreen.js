@@ -130,7 +130,7 @@ export const EventDetailsScreen = ({ navigation }) => {
           </ScrollView>
         </View>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: 160 }} />
       </ScrollView>
     </View>
   );
@@ -341,17 +341,22 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 20,
-    paddingBottom: 35, // Added margin for better look
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    bottom: 90, // Above 80px custom tab bar
+    left: 20,
+    right: 20,
+    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    borderRadius: 24,
     elevation: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
     borderWidth: 1,
     borderColor: '#F3F4F6',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   joinActionBtn: {
     borderRadius: 20,

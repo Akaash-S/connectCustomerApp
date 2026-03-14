@@ -195,7 +195,7 @@ export const RequestDetailsScreen = ({ route, navigation }) => {
           </View>
         )}
 
-        <View style={{ height: 120 }} />
+        <View style={{ height: 160 }} />
       </ScrollView>
     </View>
   );

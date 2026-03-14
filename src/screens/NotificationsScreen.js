@@ -117,14 +117,7 @@ export const NotificationsScreen = ({ navigation }) => {
             onPress={() => navigation.goBack()} 
           />
           <Text variant="headlineSmall" style={styles.headerTitle}>Notifications</Text>
-          <IconButton 
-            icon="cog-outline" 
-            mode="contained" 
-            containerColor="#FFF" 
-            iconColor="#D97706"
-            size={24}
-            onPress={() => navigation.navigate('Preferences', { type: 'Notifications' })} 
-          />
+          <View style={{ width: 48 }} /> 
         </View>
         
         <View style={styles.headerActions}>

@@ -47,6 +47,7 @@ export const ReportDetailsScreen = ({ route, navigation }) => {
             <Image key={index} source={{ uri: img }} style={styles.reportImage} />
           ))}
         </ScrollView>
+        <View style={{ height: 120 }} />
       </Card>
     </ScrollView>
   );

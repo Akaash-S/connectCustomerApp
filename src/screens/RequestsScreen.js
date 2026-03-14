@@ -92,7 +92,7 @@ export const RequestsScreen = ({ navigation }) => {
         {MY_REQUESTS.map(req => (
           <TouchableOpacity 
             key={req.id} 
-            activeOpacity={0.8}
+            activeOpacity={1}
             onPress={() => navigation.navigate('RequestDetails', { requestId: req.id })}
             style={styles.requestItem}
           >
@@ -127,23 +127,30 @@ export const RequestsScreen = ({ navigation }) => {
         </View>
         
         {VOLUNTEER_REPORTS.map(report => (
-          <Card key={report.id} style={styles.reportGlassCard}>
-            <View style={styles.reportContent}>
-              <View style={styles.reportIconCircle}>
-                <MaterialCommunityIcons name={report.icon} size={24} color="#4F46E5" />
+          <TouchableOpacity 
+            key={report.id} 
+            activeOpacity={1}
+            onPress={() => navigation.navigate('ReportDetails', { reportId: report.id })}
+            style={styles.reportItem}
+          >
+            <View style={styles.reportGlassCard}>
+              <View style={styles.reportContent}>
+                <View style={styles.reportIconCircle}>
+                  <MaterialCommunityIcons name={report.icon} size={24} color="#4F46E5" />
+                </View>
+                <View style={styles.reportText}>
+                  <Text variant="titleMedium" style={styles.reportTitleText}>{report.title}</Text>
+                  <Text variant="bodySmall" style={styles.reportSubText}>{`By ${report.volunteer} • ${report.date}`}</Text>
+                </View>
+                <IconButton 
+                  icon="arrow-right-circle-outline" 
+                  size={24} 
+                  iconColor="#6366F1"
+                  style={{ margin: 0 }}
+                />
               </View>
-              <View style={styles.reportText}>
-                <Text variant="titleMedium" style={styles.reportTitleText}>{report.title}</Text>
-                <Text variant="bodySmall" style={styles.reportSubText}>{`By ${report.volunteer} • ${report.date}`}</Text>
-              </View>
-              <IconButton 
-                icon="arrow-right-circle-outline" 
-                size={24} 
-                iconColor="#6366F1"
-                onPress={() => navigation.navigate('ReportDetails', { reportId: report.id })} 
-              />
             </View>
-          </Card>
+          </TouchableOpacity>
         ))}
 
         {/* 4. Activity History / Timeline */}
@@ -205,13 +212,13 @@ const styles = StyleSheet.create({
   },
   statGlassCard: {
     flex: 1,
-    borderRadius: 26,
+    borderRadius: 24,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.04,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.08,
     shadowRadius: 16,
-    elevation: 3,
+    elevation: 5,
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
@@ -220,22 +227,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
+    width: 44,
+    height: 44,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
   },
   statCount: {
     fontWeight: '900',
+    fontSize: 18,
   },
   statLabel: {
     color: '#9CA3AF',
-    marginTop: 2,
-    fontSize: 10,
+    marginTop: 4,
+    fontSize: 9,
     textTransform: 'uppercase',
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   sectionHeader: {
     paddingHorizontal: 24,
@@ -254,14 +267,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   progressGlassCard: {
-    borderRadius: 32,
+    borderRadius: 36,
     backgroundColor: '#FFFFFF',
     padding: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.05,
-    shadowRadius: 24,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.1,
+    shadowRadius: 30,
+    elevation: 8,
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
@@ -323,17 +336,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.05)',
   },
   reportGlassCard: {
-    marginHorizontal: 24,
-    marginBottom: 18,
-    borderRadius: 28,
+    borderRadius: 30,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.03,
-    shadowRadius: 16,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.06,
+    shadowRadius: 20,
+    elevation: 4,
     borderWidth: 1,
     borderColor: '#F1F5F9',
+  },
+  reportItem: {
+    paddingHorizontal: 24,
+    marginBottom: 16,
   },
   reportContent: {
     flexDirection: 'row',
