@@ -85,14 +85,22 @@ export const api = {
     return res.json();
   },
   getMyRequests: async () => {
-    const res = await fetch(`${API_BASE_URL}/users/me/requests`, { headers: await getHeaders() });
-    if (!res.ok) throw new Error('Failed to fetch my requests');
-    return res.json();
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/me/requests`, { headers: await getHeaders() });
+      if (!res.ok) return [];
+      return res.json();
+    } catch (error) {
+      return [];
+    }
   },
   getJoinedEvents: async () => {
-    const res = await fetch(`${API_BASE_URL}/users/me/events`, { headers: await getHeaders() });
-    if (!res.ok) throw new Error('Failed to fetch joined events');
-    return res.json();
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/me/events`, { headers: await getHeaders() });
+      if (!res.ok) return [];
+      return res.json();
+    } catch (error) {
+      return [];
+    }
   },
   getSecurityStatus: async () => {
     const res = await fetch(`${API_BASE_URL}/users/me/security`, { headers: await getHeaders() });
@@ -173,11 +181,26 @@ export const api = {
     return res.json();
   },
 
+  // ----- AUTH ----- //
+  logout: async () => {
+    try {
+      await supabase.auth.signOut();
+      return true;
+    } catch (error) {
+      console.error("Logout Error:", error);
+      return false;
+    }
+  },
+
   // ----- NGOS ----- //
   getNGOs: async (limit = 10) => {
-    const res = await fetch(`${API_BASE_URL}/ngos/?limit=${limit}`, { headers: await getHeaders() });
-    if (!res.ok) throw new Error('Failed to fetch NGOs');
-    return res.json();
+    try {
+      const res = await fetch(`${API_BASE_URL}/ngos/?limit=${limit}`, { headers: await getHeaders() });
+      if (!res.ok) return [];
+      return res.json();
+    } catch (error) {
+      return [];
+    }
   },
   getNGODetails: async (id) => {
     const res = await fetch(`${API_BASE_URL}/ngos/${id}`, { headers: await getHeaders() });
