@@ -1,28 +1,35 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Dimensions, Animated, Easing } from 'react-native';
+import { View, StyleSheet, Dimensions, Animated, Easing, StatusBar } from 'react-native';
 import { Text } from 'react-native-paper';
-import { BlurView } from 'expo-blur';
-
 import { supabase } from '../services/supabase';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const PRIMARY_DARK = '#1A1C1E';
+const GHOST_WHITE = '#F8F9FA';
 
 export const SplashScreen = ({ navigation }) => {
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  const lineAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Entrance animation
     Animated.parallel([
       Animated.timing(scaleAnim, {
         toValue: 1,
-        duration: 1000,
-        easing: Easing.out(Easing.back(1.5)),
+        duration: 1200,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(opacityAnim, {
         toValue: 1,
-        duration: 800,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(lineAnim, {
+        toValue: 1,
+        duration: 1500,
+        easing: Easing.inOut(Easing.quad),
         useNativeDriver: true,
       }),
     ]).start();
@@ -31,14 +38,14 @@ export const SplashScreen = ({ navigation }) => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
-        // Wait at least 2.5 seconds to show the animation
+        // Luxury timing for brand presence
         setTimeout(() => {
           if (session) {
             navigation.replace('Main');
           } else {
             navigation.replace('Login');
           }
-        }, 2500);
+        }, 3000);
       } catch (error) {
         console.error("Session check error:", error);
         navigation.replace('Login');
@@ -48,30 +55,37 @@ export const SplashScreen = ({ navigation }) => {
     checkSessionAndNavigate();
   }, []);
 
-  const MeshBackground = () => (
-    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFFFFF' }]}>
-      <View style={[styles.blob, { top: -150, left: -100, backgroundColor: 'rgba(217, 119, 6, 0.25)', width: 500, height: 500 }]} />
-      <View style={[styles.blob, { bottom: -100, right: -150, backgroundColor: 'rgba(16, 185, 129, 0.2)', width: 600, height: 600 }]} />
-      <View style={[styles.blob, { top: '30%', right: -100, backgroundColor: 'rgba(59, 130, 246, 0.1)', width: 300, height: 300 }]} />
-    </View>
-  );
-
   return (
     <View style={styles.container}>
-      <MeshBackground />
+      <StatusBar barStyle="dark-content" />
       
-      <Animated.View style={[styles.logoContainer, { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }]}>
-        <BlurView intensity={60} tint="light" style={styles.glassLogo}>
-          <View style={styles.iconCircle}>
-            <Text style={styles.iconText}>C</Text>
+      <Animated.View style={[styles.mainHub, { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }]}>
+          <View style={styles.logoBox}>
+             <Text style={styles.logoChar}>C</Text>
           </View>
-          <Text style={styles.appName}>CONNECT</Text>
-          <Text style={styles.tagline}>COMMUNITY POWERED</Text>
-        </BlurView>
+          
+          <View style={styles.titleGroup}>
+             <Text style={styles.appName}>CONNECT</Text>
+             <Text style={styles.tagline}>COMMUNITY ARCHITECT</Text>
+          </View>
+
+          <View style={styles.integrityBarContainer}>
+             <Animated.View 
+               style={[
+                 styles.integrityBar, 
+                 { 
+                   width: lineAnim.interpolate({
+                     inputRange: [0, 1],
+                     outputRange: ['0%', '100%']
+                   }) 
+                 }
+               ]} 
+             />
+          </View>
       </Animated.View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>BE THE CHANGE</Text>
+         <Text style={styles.footerToken}>EST. 2026 • VERSION 4.0.0</Text>
       </View>
     </View>
   );
@@ -80,76 +94,70 @@ export const SplashScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  blob: {
-    position: 'absolute',
-    borderRadius: 250,
-    opacity: 0.6,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  glassLogo: {
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 48,
-    paddingVertical: 48,
-    borderRadius: 40,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    alignItems: 'center',
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.1,
-    shadowRadius: 30,
-    elevation: 8,
-  },
-  iconCircle: {
-    width: 90,
-    height: 90,
-    borderRadius: 30,
-    backgroundColor: '#D97706',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
-    elevation: 10,
-    shadowColor: '#D97706',
+  },
+  mainHub: {
+    alignItems: 'center',
+  },
+  logoBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 28, // Luxury Radius
+    backgroundColor: PRIMARY_DARK,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 40,
+    elevation: 20,
+    shadowColor: PRIMARY_DARK,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
-    shadowRadius: 15,
+    shadowRadius: 20,
   },
-  iconText: {
-    color: '#FFF',
-    fontSize: 48,
-    fontWeight: '900',
+  logoChar: {
+    color: '#FFFFFF',
+    fontSize: 42,
+    fontWeight: '910',
+  },
+  titleGroup: {
+    alignItems: 'center',
+    marginBottom: 30,
   },
   appName: {
-    fontSize: 40,
-    fontWeight: '900',
-    color: '#1A1C1E',
-    letterSpacing: 6,
-    textTransform: 'uppercase',
+    fontSize: 28,
+    fontWeight: '1000',
+    color: PRIMARY_DARK,
+    letterSpacing: 8,
+    textAlign: 'center',
   },
   tagline: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#9CA3AF',
-    marginTop: 12,
-    letterSpacing: 3,
-    opacity: 0.8,
+    fontSize: 11,
+    fontWeight: '910',
+    color: '#94A3B8',
+    letterSpacing: 2,
+    marginTop: 8,
+    textTransform: 'uppercase',
+  },
+  integrityBarContainer: {
+    width: 120,
+    height: 3,
+    backgroundColor: GHOST_WHITE,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  integrityBar: {
+    height: '100%',
+    backgroundColor: PRIMARY_DARK,
   },
   footer: {
     position: 'absolute',
     bottom: 60,
   },
-  footerText: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#D97706',
-    letterSpacing: 5,
-    opacity: 0.6,
+  footerToken: {
+    fontSize: 10,
+    fontWeight: '910',
+    color: '#CBD5E1',
+    letterSpacing: 2,
   }
 });

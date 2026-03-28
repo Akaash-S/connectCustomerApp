@@ -5,6 +5,10 @@ import { ProfileSubScreenWrapper } from '../components/ProfileSubScreenWrapper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { api } from '../services/api';
 
+const PRIMARY_DARK = '#1A1C1E';
+const ACCENT_BLUE = '#3B82F6';
+const GHOST_WHITE = '#F8F9FA';
+
 export const RequestDetailsScreen = ({ route, navigation }) => {
   const { requestId } = route.params || {};
   const [request, setRequest] = useState(null);
@@ -74,7 +78,7 @@ export const RequestDetailsScreen = ({ route, navigation }) => {
   if (isLoading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator color="#1A1C1E" />
+        <ActivityIndicator color={PRIMARY_DARK} />
       </View>
     );
   }
@@ -99,7 +103,7 @@ export const RequestDetailsScreen = ({ route, navigation }) => {
        >
           <StatusBar barStyle="dark-content" />
           
-          {/* HERO CARD (HUB STYLE) */}
+          {/* HERO ARCHITECTURE CARD */}
           <View style={styles.heroCard}>
             <View style={styles.cardHeader}>
                <View style={styles.categoryBadge}>
@@ -113,19 +117,19 @@ export const RequestDetailsScreen = ({ route, navigation }) => {
             
             <Text style={styles.title}>{request.title}</Text>
             
-            <View style={styles.metaGrid}>
-               <View style={styles.metaItem}>
+            <View style={styles.metaRoll}>
+               <View style={styles.metaHub}>
                   <View style={styles.metaIconCircle}>
-                     <MaterialCommunityIcons name="map-marker-outline" size={20} color="#1A1C1E" />
+                     <MaterialCommunityIcons name="map-marker-outline" size={20} color={PRIMARY_DARK} />
                   </View>
                   <View>
                      <Text style={styles.metaLabel}>LOCATION</Text>
                      <Text style={styles.metaValue}>{request.location || 'Chennai'}</Text>
                   </View>
                </View>
-               <View style={styles.metaItem}>
+               <View style={styles.metaHub}>
                   <View style={styles.metaIconCircle}>
-                     <MaterialCommunityIcons name="chart-bell-curve-cumulative" size={20} color="#1A1C1E" />
+                     <MaterialCommunityIcons name="chart-bell-curve-cumulative" size={20} color={PRIMARY_DARK} />
                   </View>
                   <View>
                      <Text style={styles.metaLabel}>COMMUNITY SUPPORT</Text>
@@ -134,68 +138,81 @@ export const RequestDetailsScreen = ({ route, navigation }) => {
                </View>
             </View>
 
-            <Divider style={styles.divider} />
+            <Divider style={styles.cardDivider} />
             
             <Text style={styles.sectionLabel}>SITUATION DESCRIPTION</Text>
             <Text style={styles.description}>{request.description}</Text>
           </View>
 
-          {/* ACTION HUB (PEER TO PEER) */}
-          <View style={styles.actionHub}>
-             <TouchableOpacity style={styles.highlightBtn} onPress={handleHighlight} activeOpacity={0.7} disabled={isVoting}>
-                <MaterialCommunityIcons 
-                   name={isVoting ? "loading" : "arrow-up-bold-outline"} 
-                   size={28} 
-                   color="#3B82F6" 
-                />
-                <Text style={styles.highlightText}>Highlight Need</Text>
-             </TouchableOpacity>
-             <TouchableOpacity style={styles.donateBtn} onPress={handleDonate} activeOpacity={0.7}>
-                <MaterialCommunityIcons name="heart-flash" size={28} color="#E11D48" />
-                <Text style={styles.donateText}>Support Funds</Text>
-             </TouchableOpacity>
+          {/* PEER TO PEER ACTION HUB (SAME LAYER) */}
+          <View style={styles.actionSection}>
+             <Text style={styles.sectionLabel}>The Response</Text>
+             <Text style={styles.sectionTitle}>Peer-to-Peer Support</Text>
+             
+             <View style={styles.actionGrid}>
+                <TouchableOpacity style={styles.highlightHub} onPress={handleHighlight} activeOpacity={0.7} disabled={isVoting}>
+                   <MaterialCommunityIcons 
+                      name={isVoting ? "loading" : "arrow-up-bold-outline"} 
+                      size={28} 
+                      color={ACCENT_BLUE} 
+                   />
+                   <Text style={styles.highlightText}>Highlight Need</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.donateHub} onPress={handleDonate} activeOpacity={0.7}>
+                   <MaterialCommunityIcons name="heart-flash" size={28} color="#E11D48" />
+                   <Text style={styles.donateText}>Support Funds</Text>
+                </TouchableOpacity>
+             </View>
           </View>
 
-          {/* EVIDENCE GALLERY */}
+          {/* EVIDENCE GALLERY HUB */}
           {(request.media && request.media.length > 0) && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Contextual Evidence</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.evidenceGallery}>
+            <View style={styles.evidenceSection}>
+              <Text style={styles.sectionLabel}>The Evidence</Text>
+              <Text style={styles.sectionTitle}>Contextual Records</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.mediaRoll}>
                 {request.media.map((img, index) => (
-                  <Image key={index} source={{ uri: img }} style={styles.evidenceImage} />
+                  <View key={index} style={styles.imageWrapper}>
+                     <Image source={{ uri: img }} style={styles.evidenceImage} />
+                  </View>
                 ))}
               </ScrollView>
             </View>
           )}
 
-          {/* LOCATION PREVIEW */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Incident Perimeter</Text>
-            <View style={styles.mapCard}>
+          {/* PERIMETER NAVIGATION */}
+          <View style={styles.perimeterSection}>
+            <Text style={styles.sectionLabel}>The Perimeter</Text>
+            <Text style={styles.sectionTitle}>Incident Context</Text>
+            <View style={styles.mapHub}>
               <Image 
                 source={{ uri: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600' }} 
-                style={styles.mapImage} 
+                style={styles.mapVisual} 
               />
               <View style={styles.mapFooter}>
-                <MaterialCommunityIcons name="map-marker-radius" size={24} color="#3B82F6" />
-                <Text style={styles.mapFooterText}>{request.location || 'Reported Location'}</Text>
-                <TouchableOpacity style={styles.navBtn}>
-                   <Text style={styles.navBtnText}>NAVIGATE</Text>
+                <MaterialCommunityIcons name="map-marker-radius" size={24} color={ACCENT_BLUE} />
+                <View style={{ flex: 1 }}>
+                   <Text style={styles.mapLocation}>{request.location || 'Reported Location'}</Text>
+                </View>
+                <TouchableOpacity style={styles.navActionBtn}>
+                   <Text style={styles.navActionText}>NAVIGATE HUB</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </View>
 
-          <View style={{ height: 120 }} />
-       </ProfileSubScreenWrapper>
-
-       {/* FLOATING ACTION */}
-       <View style={[styles.floatingAction, { paddingBottom: 35 }]}>
-          <TouchableOpacity style={styles.mainActionBtn} activeOpacity={0.8} onPress={() => navigation.navigate('Events')}>
+          {/* MONOLITHIC PRIMARY ACTION (SAME LAYER) */}
+          <TouchableOpacity 
+             style={styles.monolithicAction} 
+             activeOpacity={0.8} 
+             onPress={() => navigation.navigate('Events')}
+          >
+             <Text style={styles.monolithicActionText}>Find Supporting Hubs</Text>
              <MaterialCommunityIcons name="account-group" size={20} color="#FFFFFF" />
-             <Text style={styles.mainActionText}>Find Supporting NGOs</Text>
           </TouchableOpacity>
-       </View>
+
+          <View style={{ height: 100 }} />
+       </ProfileSubScreenWrapper>
     </View>
   );
 };
@@ -213,16 +230,16 @@ const styles = StyleSheet.create({
   },
   heroCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 35, // Premium Radius
-    padding: 24, // Consistent Internal Padding
+    borderRadius: 35, // Proper Rounded Corners
+    padding: 24,
     borderWidth: 1,
-    borderColor: '#F8F9FA',
+    borderColor: '#F1F5F9',
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 15 },
     shadowOpacity: 0.05,
     shadowRadius: 20,
-    marginBottom: 40, // Master Rhythm
+    marginBottom: 40,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -231,10 +248,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   categoryBadge: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: GHOST_WHITE,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 18, // Master Icon Box Radius
+    borderRadius: 18, // Proper Icon Box Radius
   },
   categoryText: {
     fontSize: 10,
@@ -248,7 +265,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 18, // Master Icon Box Radius
+    borderRadius: 18,
     gap: 8,
   },
   statusDot: {
@@ -263,15 +280,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '910',
-    color: '#1A1C1E',
+    color: PRIMARY_DARK,
     marginBottom: 25,
     lineHeight: 30,
     letterSpacing: -0.5,
   },
-  metaGrid: {
+  metaRoll: {
     gap: 18,
   },
-  metaItem: {
+  metaHub: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
@@ -279,8 +296,8 @@ const styles = StyleSheet.create({
   metaIconCircle: {
     width: 44,
     height: 44,
-    borderRadius: 18, // Master Icon Box Radius
-    backgroundColor: '#F8F9FA',
+    borderRadius: 18, // Proper Icon Box Radius
+    backgroundColor: GHOST_WHITE,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -288,17 +305,17 @@ const styles = StyleSheet.create({
   },
   metaLabel: {
     fontSize: 10,
-    fontWeight: '800',
+    fontWeight: '910',
     color: '#94A3B8',
     letterSpacing: 1,
   },
   metaValue: {
     fontSize: 14,
     fontWeight: '910',
-    color: '#1A1C1E',
+    color: PRIMARY_DARK,
     marginTop: 2,
   },
-  divider: {
+  cardDivider: {
     marginVertical: 25,
     backgroundColor: '#F8F9FA',
   },
@@ -306,8 +323,16 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '910',
     color: '#94A3B8',
+    textTransform: 'uppercase',
     letterSpacing: 1.5,
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '910',
+    color: PRIMARY_DARK,
+    letterSpacing: -0.5,
+    marginBottom: 20,
   },
   description: {
     fontSize: 15,
@@ -315,16 +340,18 @@ const styles = StyleSheet.create({
     lineHeight: 25,
     fontWeight: '600',
   },
-  actionHub: {
+  actionSection: {
+    marginBottom: 40,
+  },
+  actionGrid: {
     flexDirection: 'row',
     gap: 15,
-    marginBottom: 40, // Master Rhythm
   },
-  highlightBtn: {
+  highlightHub: {
     flex: 1,
     height: 100,
     backgroundColor: '#F0F9FF',
-    borderRadius: 35, // Premium Card Radius (Large Action)
+    borderRadius: 35, // Premium Hub Radius
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -333,14 +360,14 @@ const styles = StyleSheet.create({
   highlightText: {
     fontSize: 13,
     fontWeight: '910',
-    color: '#3B82F6',
+    color: ACCENT_BLUE,
     marginTop: 8,
   },
-  donateBtn: {
+  donateHub: {
     flex: 1,
     height: 100,
     backgroundColor: '#FFF1F2',
-    borderRadius: 35, // Premium Card Radius (Large Action)
+    borderRadius: 35, // Premium Hub Radius
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -352,90 +379,82 @@ const styles = StyleSheet.create({
     color: '#E11D48',
     marginTop: 8,
   },
-  section: {
-    marginBottom: 40, // Master Rhythm
+  evidenceSection: {
+    marginBottom: 40,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '910',
-    color: '#1A1C1E',
-    marginBottom: 18,
-  },
-  evidenceGallery: {
+  mediaRoll: {
     flexDirection: 'row',
   },
-  evidenceImage: {
-    width: 200,
-    height: 140,
-    borderRadius: 35, // Master Premium Radius
+  imageWrapper: {
     marginRight: 15,
+  },
+  evidenceImage: {
+    width: 220,
+    height: 150,
+    borderRadius: 35, // Proper Hub Radius
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
-  mapCard: {
+  perimeterSection: {
+    marginBottom: 40,
+  },
+  mapHub: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 35, // Master Premium Radius
+    borderRadius: 35, // Proper Hub Radius
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#F8F9FA',
+    borderColor: '#F1F5F9',
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.05,
     shadowRadius: 15,
   },
-  mapImage: {
+  mapVisual: {
     width: '100%',
     height: 160,
   },
   mapFooter: {
-    padding: 24, // Consistent Internal Padding
+    padding: 24,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  mapFooterText: {
-    flex: 1,
+  mapLocation: {
     fontSize: 14,
     fontWeight: '910',
-    color: '#1A1C1E',
+    color: PRIMARY_DARK,
   },
-  navBtn: {
-    backgroundColor: '#1A1C1E',
-    paddingHorizontal: 18,
+  navActionBtn: {
+    backgroundColor: PRIMARY_DARK,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 18, // Master Icon Box Radius
+    borderRadius: 18,
   },
-  navBtnText: {
+  navActionText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '900',
   },
-  floatingAction: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 24,
-    backgroundColor: 'rgba(255,255,255,0.92)',
-  },
-  mainActionBtn: {
-    backgroundColor: '#1A1C1E',
-    height: 60,
-    borderRadius: 30, // Premium Capsule Radius
+  monolithicAction: {
+    backgroundColor: PRIMARY_DARK,
+    height: 70,
+    borderRadius: 35,
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 30,
     gap: 12,
     elevation: 10,
-    shadowColor: '#000',
+    shadowColor: PRIMARY_DARK,
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.2,
     shadowRadius: 20,
+    marginTop: 10,
   },
-  mainActionText: {
+  monolithicActionText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '910',
     letterSpacing: 0.5,
   },

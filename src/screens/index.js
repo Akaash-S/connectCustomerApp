@@ -20,4 +20,5 @@ export * from './profile/PreferencesScreens';
 export * from './profile/SecurityPrivacyScreens';
 export * from './profile/SupportHelpScreens';
 export * from './profile/LegalScreens';
+export * from './profile/ImpactLogsScreen';
 export * from './VolunteerApplicationScreen';

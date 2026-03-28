@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { TouchableOpacity, View, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, StyleSheet, Platform } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import {
   HomeScreen, NGOsScreen, EventsScreen, RequestsScreen, ProfileScreen,
@@ -9,23 +9,28 @@ import {
   SplashScreen, LoginScreen, RequestDetailsScreen, ReportDetailsScreen, EditProfileScreen,
   MyRequestsScreen, JoinedEventsScreen, SavedItemsScreen, PreferencesScreens,
   SecurityPrivacyScreens, SupportHelpScreens, LegalScreens, NotificationsScreen,
-  VolunteerApplicationScreen
+  VolunteerApplicationScreen, ImpactLogsScreen
 } from '../screens';
 import { useTheme, Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dimensions } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const TAB_BAR_HEIGHT = 85;
+const PRIMARY_DARK = '#1A1C1E';
+const ACCENT_BLUE = '#3B82F6';
+const GHOST_WHITE = '#F8F9FA';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const CustomTabBar = ({ state, descriptors, navigation }) => {
-  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  
+  // High-fidelity dynamic height for prominent icons
+  const dynamicHeight = 85 + (insets.bottom > 20 ? insets.bottom - 5 : insets.bottom + 10);
 
   return (
-    <View style={styles.tabBarContainer}>
+    <View style={[styles.tabBarContainer, { height: dynamicHeight, paddingBottom: insets.bottom + 12 }]}>
       <View style={styles.routesContainer}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -46,22 +51,24 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
               key={route.key}
               onPress={onPress}
               style={styles.tabButton}
-              activeOpacity={1}
+              activeOpacity={0.8}
             >
-              <View style={styles.iconWrapper}>
+              <View style={[styles.iconWrapper, isFocused && styles.activeIconWrapper]}>
                 {IconComponent && (
                   <IconComponent 
                     focused={isFocused} 
-                    color={isFocused ? '#1A1C1E' : '#94A3B8'} 
-                    size={24} 
+                    color={isFocused ? '#FFFFFF' : '#94A3B8'} 
+                    size={26}
                   />
                 )}
-                {isFocused && <View style={styles.activeLine} />}
               </View>
-              <Text style={[
-                styles.tabLabel,
-                { color: isFocused ? '#1A1C1E' : '#94A3B8' }
-              ]}>
+              <Text 
+                numberOfLines={1} 
+                style={[
+                  styles.tabLabel,
+                  { color: isFocused ? PRIMARY_DARK : '#94A3B8', fontWeight: isFocused ? '1000' : '900' }
+                ]}
+              >
                 {label}
               </Text>
             </TouchableOpacity>
@@ -76,7 +83,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 const HomeStack = () => (
   <Stack.Navigator>
     <Stack.Screen name="Dashboard" component={HomeScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="RequestHelp" component={RequestHelpScreen} options={{ title: 'Request Help' }} />
+    <Stack.Screen name="RequestHelp" component={RequestHelpScreen} options={{ headerShown: false }} />
     <Stack.Screen name="Events" component={EventsScreen} options={{ headerShown: false }} />
     <Stack.Screen name="EventDetails" component={EventDetailsScreen} options={{ headerShown: false }} />
   </Stack.Navigator>
@@ -88,7 +95,6 @@ const NGOStack = () => (
     <Stack.Screen name="NGODetails" component={NGODetailsScreen} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
-
 
 const ReportStack = () => (
   <Stack.Navigator>
@@ -110,11 +116,11 @@ const ProfileStack = () => (
     <Stack.Screen name="SupportHelp" component={SupportHelpScreens} options={{ headerShown: false }} />
     <Stack.Screen name="Legal" component={LegalScreens} options={{ headerShown: false }} />
     <Stack.Screen name="VolunteerApplication" component={VolunteerApplicationScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="ImpactLogs" component={ImpactLogsScreen} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 
 const MainTabs = () => {
-  const theme = useTheme();
   return (
     <Tab.Navigator
       tabBar={props => <CustomTabBar {...props} />}
@@ -126,9 +132,9 @@ const MainTabs = () => {
         name="Home"
         component={HomeStack}
         options={{
-          title: 'Home',
+          title: 'Hub',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="palette-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="view-dashboard-variant" size={size} color={color} />
           )
         }}
       />
@@ -138,7 +144,7 @@ const MainTabs = () => {
         options={{
           title: 'NGOs',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="office-building-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="hand-heart" size={size} color={color} />
           )
         }}
       />
@@ -146,9 +152,9 @@ const MainTabs = () => {
         name="Add"
         component={RequestHelpScreen}
         options={{
-          title: 'Request',
+          title: 'Add',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="plus-circle-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="plus-thick" size={size} color={color} />
           )
         }}
       />
@@ -156,9 +162,9 @@ const MainTabs = () => {
         name="Reports"
         component={ReportStack}
         options={{
-          title: 'Reports',
+          title: 'Logs',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="chart-box-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="shield-check" size={size} color={color} />
           )
         }}
       />
@@ -166,9 +172,9 @@ const MainTabs = () => {
         name="Profile"
         component={ProfileStack}
         options={{
-          title: 'Profile',
+          title: 'Me',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="account-circle" size={size} color={color} />
           )
         }}
       />
@@ -187,22 +193,21 @@ export const AppNavigator = () => (
 
 const styles = StyleSheet.create({
   tabBarContainer: {
-    height: TAB_BAR_HEIGHT,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
-    paddingBottom: 25,
-    paddingTop: 10,
-    elevation: 20,
+    paddingTop: 12,
+    elevation: 40,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -10 },
-    shadowOpacity: 0.05,
-    shadowRadius: 15,
+    shadowOffset: { width: 0, height: -15 },
+    shadowOpacity: 0.12,
+    shadowRadius: 32,
   },
   routesContainer: {
     flexDirection: 'row',
     height: '100%',
     alignItems: 'center',
+    paddingHorizontal: 12,
   },
   tabButton: {
     flex: 1,
@@ -210,24 +215,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconWrapper: {
-    width: 44,
-    height: 32,
+    width: 65, // Prominent active highlight
+    height: 48,
+    borderRadius: 24, // Perfectly Rounded Capsules
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
+    backgroundColor: 'transparent',
   },
-  activeLine: {
-    height: 2,
-    width: 12,
-    backgroundColor: '#1A1C1E',
-    borderRadius: 1,
-    marginTop: 4,
+  activeIconWrapper: {
+    backgroundColor: PRIMARY_DARK,
+    elevation: 12,
+    shadowColor: PRIMARY_DARK,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   tabLabel: {
     fontSize: 9,
-    fontWeight: '800',
+    fontWeight: '900',
     textAlign: 'center',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
+    width: '100%',
   }
 });

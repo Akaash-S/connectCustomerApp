@@ -15,6 +15,7 @@ export const NotificationTabs = ({ activeTab, onTabChange }) => {
               key={tab}
               style={[styles.tab, isActive && styles.activeTab]}
               onPress={() => onTabChange(tab)}
+              activeOpacity={0.8}
             >
               <Text style={[styles.tabText, isActive && styles.activeTabText]}>
                 {tab}
@@ -29,31 +30,33 @@ export const NotificationTabs = ({ activeTab, onTabChange }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 15,
+    marginBottom: 24, // Internal Rhythm
   },
   scrollContent: {
-    paddingHorizontal: 15,
-    gap: 10,
+    paddingHorizontal: 24,
+    gap: 12,
   },
   tab: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
+    borderRadius: 20, // Premium Tabs
+    backgroundColor: '#F8F9FA',
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: '#F1F5F9',
   },
   activeTab: {
-    backgroundColor: '#FFF',
-    borderColor: '#D97706',
+    backgroundColor: '#1A1C1E',
+    borderColor: '#1A1C1E',
   },
   tabText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#6B7280',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   activeTabText: {
-    color: '#D97706',
-    fontWeight: '900',
+    color: '#FFFFFF',
+    fontWeight: '910',
   },
 });

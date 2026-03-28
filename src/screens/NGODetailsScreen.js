@@ -1,58 +1,30 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList } from 'react-native';
-import { Text, useTheme, Button, IconButton, Avatar, Card, Divider } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList, StatusBar, ActivityIndicator } from 'react-native';
+import { Text, Divider, Button } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { api } from '../services/api';
 
-const ACTIVE_EVENTS = [
-  { id: '1', title: 'Beach Cleanup Drive', date: '25 March', location: 'Marina Beach' },
-  { id: '2', title: 'Urban Garden Planting', date: '02 April', location: 'Guindy Park' },
-];
-
-const GALLERY = [
-  'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400',
-  'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400',
-  'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400',
-];
+const PRIMARY_DARK = '#1A1C1E';
+const ACCENT_BLUE = '#3B82F6';
+const GHOST_WHITE = '#F8F9FA';
 
 export const NGODetailsScreen = ({ route, navigation }) => {
-  const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { ngoId } = route.params || {};
 
-  const [ngo, setNgo] = useState({
-    name: 'Loading Foundation...',
-    type: 'Community NGO',
-    location: 'Chennai, India',
-    about: 'Fetching NGO details...',
-    volunteers: 0,
-    projects: 0,
-    activeEventsCount: 0,
-    bannerImage: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800',
-    isVerified: true
-  });
-
+  const [ngo, setNgo] = useState(null);
   const [activeEvents, setActiveEvents] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!ngoId) return;
-
     const fetchDetails = async () => {
       try {
         const data = await api.getNGODetails(ngoId);
         if (data) {
-          setNgo({
-            name: data.name,
-            type: data.category || 'Non-Profit',
-            location: data.location || 'Chennai, India',
-            about: data.description || 'No description available.',
-            volunteers: data.volunteerCount || 0,
-            projects: data.projectCount || 0,
-            activeEventsCount: data.activeEvents?.length || 0,
-            bannerImage: data.image || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800',
-            isVerified: data.isVerified ?? true
-          });
+          setNgo(data);
           if (data.activeEvents) {
             setActiveEvents(data.activeEvents);
           }
@@ -66,117 +38,149 @@ export const NGODetailsScreen = ({ route, navigation }) => {
     fetchDetails();
   }, [ngoId]);
 
+  if (isLoading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator color={PRIMARY_DARK} />
+      </View>
+    );
+  }
+
+  if (!ngo) {
+    return (
+      <View style={styles.emptyContainer}>
+        <MaterialCommunityIcons name="office-building-marker-outline" size={60} color="#F1F5F9" />
+        <Text style={styles.emptyText}>NGO Not Found</Text>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Top Banner */}
-      <View style={styles.bannerContainer}>
-        <Image 
-          source={{ uri: ngo.bannerImage }} 
-          style={styles.bannerImage} 
-        />
-        <View style={styles.bannerOverlay}>
-          <View style={styles.bannerTop}>
-            <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-              <MaterialCommunityIcons name="chevron-left" size={28} color="#FFF" />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.bannerBottom}>
-            {ngo.isVerified && (
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="light-content" />
+      
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}>
+        {/* HERO BANNER HUB */}
+        <View style={styles.bannerContainer}>
+          <Image source={{ uri: ngo.image || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800' }} style={styles.bannerImage} />
+          <View style={styles.bannerOverlay}>
+            <View style={[styles.bannerTop, { paddingTop: insets.top + 10 }]}>
+              <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+                <MaterialCommunityIcons name="chevron-left" size={28} color="#FFF" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.bannerBottom}>
               <View style={styles.verifiedBadge}>
                 <MaterialCommunityIcons name="check-decagram" size={14} color="#FFF" />
-                <Text style={styles.verifiedText}>Verified NGO</Text>
+                <Text style={styles.verifiedText}>Verified NGO Partner</Text>
               </View>
-            )}
-            <Text variant="displaySmall" style={styles.ngoName}>{ngo.name}</Text>
-            <Text variant="titleMedium" style={styles.ngoMeta}>{ngo.type} • {ngo.location}</Text>
+              <Text style={styles.ngoName}>{ngo.name}</Text>
+              <Text style={styles.ngoMeta}>{ngo.category || 'Non-Profit'} • {ngo.location || 'Chennai, India'}</Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* NGO Statistics */}
-      <View style={styles.statsContainer}>
-        <View style={styles.statBox}>
-          <Text variant="headlineSmall" style={[styles.statValue, { color: theme.colors.primary }]}>{ngo.volunteers}</Text>
-          <Text variant="labelSmall" style={styles.statLabel}>Volunteers</Text>
+        {/* STATISTICS HUB */}
+        <View style={styles.statsHub}>
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>{ngo.volunteerCount || '0'}</Text>
+            <Text style={styles.statLabel}>Volunteers</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>{ngo.projectCount || '0'}</Text>
+            <Text style={styles.statLabel}>Projects</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>{activeEvents.length}</Text>
+            <Text style={styles.statLabel}>Live Events</Text>
+          </View>
         </View>
-        <Divider style={styles.statDivider} />
-        <View style={styles.statBox}>
-          <Text variant="headlineSmall" style={[styles.statValue, { color: theme.colors.primary }]}>{ngo.projects}</Text>
-          <Text variant="labelSmall" style={styles.statLabel}>Projects</Text>
-        </View>
-        <Divider style={styles.statDivider} />
-        <View style={styles.statBox}>
-          <Text variant="headlineSmall" style={[styles.statValue, { color: theme.colors.primary }]}>{ngo.activeEventsCount}</Text>
-          <Text variant="labelSmall" style={styles.statLabel}>Active Events</Text>
-        </View>
-      </View>
 
-      {/* About Section */}
-      <View style={styles.section}>
-        <Text variant="titleLarge" style={styles.sectionTitle}>About NGO</Text>
-        <Text variant="bodyMedium" style={styles.aboutText}>
-          {ngo.about}
-        </Text>
-      </View>
-
-      {/* Active Events */}
-      <View style={styles.section}>
-        <View style={styles.headerRow}>
-          <Text variant="titleLarge" style={styles.sectionTitle}>Active Events</Text>
-          <TouchableOpacity><Text style={{ color: theme.colors.secondary, fontWeight: 'bold' }}>View All</Text></TouchableOpacity>
+        {/* ABOUT SECTION */}
+        <View style={styles.hubSection}>
+          <Text style={styles.sectionLabel}>The Mission</Text>
+          <Text style={styles.sectionTitle}>Archival Vision</Text>
+          <Text style={styles.aboutText}>{ngo.description || 'No description available.'}</Text>
         </View>
-        {activeEvents.length > 0 ? activeEvents.map(event => (
-          <Card key={event.id} style={styles.eventCard} onPress={() => navigation.navigate('EventDetails', { eventId: event.id })}>
-            <View style={styles.eventContent}>
-              <View style={styles.eventInfo}>
-                <Text variant="titleMedium" style={styles.eventTitle}>{event.title}</Text>
-                <Text variant="bodySmall" style={styles.eventMetaText}>📅 {event.date} • 📍 {event.location}</Text>
-              </View>
-              <Button mode="contained" buttonColor={theme.colors.secondary} style={styles.eventBtn}>View</Button>
+
+        {/* ACTIVE INITIATIVES HUB */}
+        <View style={styles.hubSection}>
+          <View style={styles.sectionHeaderLine}>
+            <View>
+              <Text style={styles.sectionLabel}>The Frontline</Text>
+              <Text style={styles.sectionTitle}>Live Initiatives</Text>
             </View>
-          </Card>
-        )) : (
-          <Text variant="bodySmall" style={{ fontStyle: 'italic', color: '#9CA3AF' }}>No active events currently scheduled.</Text>
-        )}
-      </View>
+            <TouchableOpacity activeOpacity={0.7}>
+              <Text style={styles.viewAllText}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {activeEvents.length > 0 ? activeEvents.map(event => (
+            <TouchableOpacity 
+               key={event.id} 
+               style={styles.eventHubCard} 
+               activeOpacity={0.9}
+               onPress={() => navigation.navigate('EventDetails', { eventId: event.id })}
+            >
+              <View style={styles.eventInfo}>
+                <Text style={styles.eventTitle}>{event.title}</Text>
+                <View style={styles.eventMetaRow}>
+                   <MaterialCommunityIcons name="calendar-clock" size={14} color={ACCENT_BLUE} />
+                   <Text style={styles.eventMetaText}>{event.date || 'TBD'} • {event.location || 'Chennai'}</Text>
+                </View>
+              </View>
+              <View style={styles.eventGoBtn}>
+                 <MaterialCommunityIcons name="arrow-right" size={20} color={PRIMARY_DARK} />
+              </View>
+            </TouchableOpacity>
+          )) : (
+            <View style={styles.emptyCard}>
+               <Text style={styles.emptyCardText}>No active initiatives at this moment.</Text>
+            </View>
+          )}
+        </View>
 
-      {/* Gallery */}
-      <View style={styles.section}>
-        <Text variant="titleLarge" style={styles.sectionTitle}>Gallery</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.galleryScroll}>
-          {GALLERY.map((img, index) => (
-            <Image key={index} source={{ uri: img }} style={styles.galleryImage} />
-          ))}
-        </ScrollView>
-      </View>
+        {/* MONOLITHIC ACTION HUB (SAME LAYER) */}
+        <View style={styles.actionSection}>
+           <TouchableOpacity 
+              style={[styles.followBtn, isFollowing && styles.followingBtn]} 
+              onPress={() => setIsFollowing(!isFollowing)}
+              activeOpacity={0.9}
+           >
+              <Text style={[styles.followText, isFollowing && styles.followingText]}>
+                 {isFollowing ? "Archived in My Network" : "Partner with this NGO"}
+              </Text>
+              <View style={[styles.btnIconBox, isFollowing && { backgroundColor: 'rgba(0,0,0,0.05)' }]}>
+                 <MaterialCommunityIcons 
+                    name={isFollowing ? "check-circle" : "plus-circle-outline"} 
+                    size={20} 
+                    color={isFollowing ? PRIMARY_DARK : "#FFF"} 
+                 />
+              </View>
+           </TouchableOpacity>
+        </View>
 
-      {/* Interaction Footer */}
-      <View style={styles.footer}>
-        <Button 
-          mode={isFollowing ? "outlined" : "contained"} 
-          buttonColor={isFollowing ? "transparent" : theme.colors.primary}
-          onPress={() => setIsFollowing(!isFollowing)}
-          style={styles.followBtn}
-          contentStyle={{ height: 56 }}
-        >
-          {isFollowing ? "Following" : "Follow NGO"}
-        </Button>
-      </View>
-
-      <View style={{ height: 120 }} />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  mainContainer: {
     flex: 1,
-    backgroundColor: '#FFF9F0',
+    backgroundColor: '#FFFFFF',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
   },
   bannerContainer: {
-    height: 450,
+    height: 480,
     width: '100%',
-    position: 'relative',
   },
   bannerImage: {
     width: '100%',
@@ -184,19 +188,17 @@ const styles = StyleSheet.create({
   },
   bannerOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     padding: 24,
     justifyContent: 'space-between',
-    paddingTop: 50,
   },
   bannerTop: {
     flexDirection: 'row',
-    alignItems: 'center',
   },
   backBtn: {
     width: 48,
     height: 48,
-    borderRadius: 16,
+    borderRadius: 18,
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -204,118 +206,218 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.3)',
   },
   bannerBottom: {
-    paddingBottom: 40, // Increased to account for stat overlap
+    paddingBottom: 50,
   },
   verifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(217, 119, 6, 0.9)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
     alignSelf: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 12,
+    gap: 6,
   },
   verifiedText: {
     color: '#FFF',
     fontSize: 10,
-    fontWeight: 'bold',
-    marginLeft: 4,
+    fontWeight: '910',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   ngoName: {
     color: '#FFF',
-    fontWeight: '900',
+    fontSize: 32,
+    fontWeight: '910',
+    letterSpacing: -1,
   },
   ngoMeta: {
-    color: '#F3F4F6',
-    marginTop: 4,
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: 6,
   },
-  statsContainer: {
+  statsHub: {
     flexDirection: 'row',
-    marginHorizontal: 20,
-    marginTop: -35,
-    backgroundColor: '#FFF',
-    borderRadius: 28,
-    padding: 24,
-    elevation: 8,
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    marginHorizontal: 24,
+    marginTop: -40,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 35, // Premium Hub Radius
+    padding: 28,
+    elevation: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.1,
+    shadowRadius: 30,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#F1F5F9',
+    alignItems: 'center',
   },
   statBox: {
-    alignItems: 'center',
     flex: 1,
+    alignItems: 'center',
   },
   statValue: {
-    fontWeight: '900',
+    fontSize: 24,
+    fontWeight: '1000',
+    color: PRIMARY_DARK,
   },
   statLabel: {
-    color: '#9CA3AF',
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#94A3B8',
     textTransform: 'uppercase',
-    marginTop: 2,
+    letterSpacing: 1,
+    marginTop: 4,
   },
   statDivider: {
     width: 1,
-    height: '60%',
-    backgroundColor: '#F3F4F6',
+    height: 40,
+    backgroundColor: '#F1F5F9',
   },
-  section: {
-    paddingHorizontal: 20,
-    marginTop: 30,
+  hubSection: {
+    paddingHorizontal: 24,
+    marginTop: 40,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '910',
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    marginBottom: 8,
   },
   sectionTitle: {
-    fontWeight: '900',
-    marginBottom: 15,
+    fontSize: 24,
+    fontWeight: '910',
+    color: PRIMARY_DARK,
+    letterSpacing: -0.5,
+    marginBottom: 18,
   },
   aboutText: {
-    color: '#4B5563',
-    lineHeight: 24,
+    fontSize: 15,
+    color: '#475569',
+    lineHeight: 25,
+    fontWeight: '600',
   },
-  headerRow: {
+  sectionHeaderLine: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
-  eventCard: {
-    marginBottom: 12,
-    borderRadius: 20,
-    backgroundColor: '#FFF',
-    elevation: 2,
+  viewAllText: {
+    fontSize: 13,
+    fontWeight: '910',
+    color: ACCENT_BLUE,
+    marginTop: 20,
   },
-  eventContent: {
+  eventHubCard: {
+    backgroundColor: GHOST_WHITE,
+    borderRadius: 32, // Proper Rounded Corners
+    padding: 24,
     flexDirection: 'row',
-    padding: 16,
     alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   eventInfo: {
     flex: 1,
   },
   eventTitle: {
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '910',
+    color: PRIMARY_DARK,
+    marginBottom: 6,
+  },
+  eventMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   eventMetaText: {
-    color: '#6B7280',
-    marginTop: 2,
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748B',
   },
-  eventBtn: {
-    borderRadius: 12,
-  },
-  galleryScroll: {
-    marginTop: 10,
-  },
-  galleryImage: {
-    width: 150,
-    height: 100,
+  eventGoBtn: {
+    width: 44,
+    height: 44,
     borderRadius: 16,
-    marginRight: 10,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
-  footer: {
-    paddingHorizontal: 20,
+  emptyCard: {
+    backgroundColor: GHOST_WHITE,
+    padding: 30,
+    borderRadius: 32,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    borderStyle: 'dashed',
+  },
+  emptyCardText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#94A3B8',
+    fontStyle: 'italic',
+  },
+  actionSection: {
+    paddingHorizontal: 24,
     marginTop: 40,
-    paddingBottom: 20,
   },
   followBtn: {
+    backgroundColor: PRIMARY_DARK,
+    height: 75,
+    borderRadius: 38,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    elevation: 12,
+    shadowColor: PRIMARY_DARK,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+  },
+  followingBtn: {
+    backgroundColor: GHOST_WHITE,
+    elevation: 0,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    shadowOpacity: 0,
+  },
+  followText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '910',
+    letterSpacing: 0.5,
+  },
+  followingText: {
+    color: PRIMARY_DARK,
+  },
+  btnIconBox: {
+    width: 44,
+    height: 44,
     borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  emptyText: {
+    marginTop: 20,
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#94A3B8',
   }
 });

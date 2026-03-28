@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, SectionList } from 'react-native';
-import { Text, IconButton, useTheme, Button, Badge } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, TouchableOpacity, SectionList, StatusBar, ActivityIndicator } from 'react-native';
+import { Text, useTheme, Button } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -37,29 +37,10 @@ const DUMMY_NOTIFICATIONS = [
     type: 'NGOs',
     read: true,
     date: 'Yesterday'
-  },
-  {
-    id: '4',
-    title: '📩 Request Update',
-    description: 'Your request has been marked as "In Progress".',
-    time: '2 days ago',
-    type: 'Requests',
-    read: true,
-    date: 'Earlier'
-  },
-  {
-    id: '5',
-    title: '🎉 Welcome to CONNECT',
-    description: 'Thank you for joining our community of changemakers!',
-    time: '4 days ago',
-    type: 'System',
-    read: true,
-    date: 'Earlier'
   }
 ];
 
 export const NotificationsScreen = ({ navigation }) => {
-  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState('All');
   const [notifications, setNotifications] = useState([]);
@@ -74,18 +55,18 @@ export const NotificationsScreen = ({ navigation }) => {
             id: item.id || Math.random().toString(),
             title: item.title || item.action,
             description: item.description || `Activity logged: ${item.action}`,
-            time: item.timestamp ? new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
+            time: item.date || 'Just now',
             type: item.type || 'System',
             read: true,
             date: 'Live'
           }));
           setNotifications(mapped);
         } else {
-          setNotifications(DUMMY_NOTIFICATIONS);
+          setNotifications([]);
         }
       } catch (error) {
         console.warn("API Error (Notifications):", error);
-        setNotifications(DUMMY_NOTIFICATIONS);
+        setNotifications([]);
       } finally {
         setIsLoading(false);
       }
@@ -97,7 +78,6 @@ export const NotificationsScreen = ({ navigation }) => {
     activeTab === 'All' || n.type === activeTab
   );
 
-  // Group notifications by date
   const groupedNotifications = filteredNotifications.reduce((acc, item) => {
     const section = acc.find(s => s.title === item.date);
     if (section) {
@@ -118,61 +98,49 @@ export const NotificationsScreen = ({ navigation }) => {
 
   const handleNotificationPress = (item) => {
     setNotifications(notifications.map(n => n.id === item.id ? { ...n, read: true } : n));
-    
-    // Navigation logic
     if (item.type === 'Requests') navigation.navigate('MyRequests');
     else if (item.type === 'Events') navigation.navigate('JoinedEvents');
     else if (item.type === 'NGOs') navigation.navigate('NGOs');
   };
 
-  const MeshBackground = () => (
-    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFF9F0' }]}>
-      <View style={[styles.blob, { top: -100, right: -50, backgroundColor: 'rgba(217, 119, 6, 0.08)', width: 300, height: 300 }]} />
-      <View style={[styles.blob, { bottom: -100, left: -50, backgroundColor: 'rgba(16, 185, 129, 0.08)', width: 300, height: 300 }]} />
+  const CustomHeader = () => (
+    <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
+       <View style={styles.headerTop}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+             <MaterialCommunityIcons name="arrow-left" size={24} color="#1A1C1E" />
+          </TouchableOpacity>
+          <View>
+             <Text style={styles.headerTitle}>Activity</Text>
+             <Text style={styles.headerSub}>Community pulses</Text>
+          </View>
+          <View style={{ width: 44 }} />
+       </View>
+       
+       <View style={styles.actionHub}>
+          <TouchableOpacity onPress={markAllRead} style={styles.actionBtn}>
+             <MaterialCommunityIcons name="check-all" size={16} color="#3B82F6" />
+             <Text style={styles.actionText}>Read All</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={clearAll} style={styles.actionBtn}>
+             <MaterialCommunityIcons name="delete-sweep-outline" size={16} color="#E11D48" />
+             <Text style={[styles.actionText, { color: '#E11D48' }]}>Clear</Text>
+          </TouchableOpacity>
+       </View>
     </View>
   );
 
   return (
-    <View style={{ flex: 1 }}>
-      <MeshBackground />
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="dark-content" />
+      <CustomHeader />
       
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
-        <View style={styles.headerTop}>
-          <IconButton 
-            icon="arrow-left" 
-            mode="contained" 
-            containerColor="#FFF" 
-            size={24}
-            onPress={() => navigation.goBack()} 
-          />
-          <Text variant="headlineSmall" style={styles.headerTitle}>Notifications</Text>
-          <View style={{ width: 48 }} /> 
-        </View>
-        
-        <View style={styles.headerActions}>
-          <Button 
-            mode="text" 
-            onPress={markAllRead} 
-            labelStyle={styles.actionLabel}
-            icon="check-all"
-          >
-            Mark all as read
-          </Button>
-          <Button 
-            mode="text" 
-            onPress={clearAll} 
-            labelStyle={[styles.actionLabel, { color: '#EF4444' }]}
-            icon="delete-sweep-outline"
-          >
-            Clear all
-          </Button>
-        </View>
-      </View>
-
       <NotificationTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {filteredNotifications.length === 0 ? (
+      {isLoading ? (
+        <View style={styles.loader}>
+           <ActivityIndicator color="#1A1C1E" />
+        </View>
+      ) : filteredNotifications.length === 0 ? (
         <NotificationEmptyState />
       ) : (
         <SectionList
@@ -180,6 +148,7 @@ export const NotificationsScreen = ({ navigation }) => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           stickySectionHeadersEnabled={false}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <NotificationCard 
               item={item} 
@@ -199,57 +168,91 @@ export const NotificationsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  loader: {
+    padding: 100,
+  },
   header: {
-    paddingHorizontal: 15,
-    backgroundColor: 'transparent',
+    paddingHorizontal: 24,
+    marginBottom: 10,
   },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  backBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 18,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   headerTitle: {
-    fontWeight: '900',
+    fontSize: 24,
+    fontWeight: '910',
     color: '#1A1C1E',
     letterSpacing: -0.5,
+    textAlign: 'center',
   },
-  headerActions: {
+  headerSub: {
+    fontSize: 12,
+    color: '#94A3B8',
+    fontWeight: '700',
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  actionHub: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
-    paddingHorizontal: 5,
+    marginBottom: 15,
   },
-  actionLabel: {
-    fontSize: 12,
-    fontWeight: '800',
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F8F9FA',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  actionText: {
+    fontSize: 11,
+    fontWeight: '910',
+    color: '#3B82F6',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  blob: {
-    position: 'absolute',
-    borderRadius: 200,
+    letterSpacing: 1,
   },
   listContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 120, // Increased to clear tab bar
+    paddingHorizontal: 24,
+    paddingBottom: 120,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 25,
-    marginBottom: 10,
+    marginTop: 40, // Master Rhythm
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#9CA3AF',
+    fontSize: 11,
+    fontWeight: '910',
+    color: '#94A3B8',
     textTransform: 'uppercase',
     letterSpacing: 1.5,
-    marginRight: 15,
+    marginRight: 16,
   },
   sectionLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#F1F5F9',
   }
 });

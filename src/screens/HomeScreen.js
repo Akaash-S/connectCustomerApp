@@ -8,8 +8,8 @@ import { api } from '../services/api';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const QUICK_ACTIONS = [
-  { id: '1', title: 'Request Help', icon: 'hand-heart', color: '#FFF1F2', route: 'RequestHelp' },
-  { id: '2', title: 'Find NGOs', icon: 'office-building', color: '#F0F9FF', route: 'NGOs' },
+  { id: '1', title: 'Request Help', icon: 'handshake', color: '#FFF1F2', route: 'RequestHelp' },
+  { id: '2', title: 'Find NGOs', icon: 'hand-heart', color: '#F0F9FF', route: 'NGOs' },
   { id: '3', title: 'Support Peer', icon: 'heart-plus', color: '#F0FDF4', route: 'CommunityFeed' },
   { id: '4', title: 'Impact Events', icon: 'calendar-star', color: '#FFF7ED', route: 'Events' },
   { id: '5', title: 'Security Hub', icon: 'shield-lock', color: '#F5F3FF', route: 'SecurityPrivacy' },
@@ -17,11 +17,11 @@ const QUICK_ACTIONS = [
 
 export const HomeScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  
-  const [user, setUser] = useState({ fullName: 'Akash', avatarUrl: null });
+
+  const [user, setUser] = useState({ fullName: '', avatarUrl: null });
   const [nearbyRequests, setNearbyRequests] = useState([]);
   const [featuredNGOs, setFeaturedNGOs] = useState([]);
-  const [stats, setStats] = useState({ volunteers: 1200, ngos: 45 });
+  const [stats, setStats] = useState({ volunteers: 0, ngos: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -34,7 +34,7 @@ export const HomeScreen = ({ navigation }) => {
           api.getNGOs(5),
           api.getUserStats(),
         ]);
-        
+
         if (profile.status === 'fulfilled') setUser(profile.value);
         if (reqData.status === 'fulfilled' && reqData.value) setNearbyRequests(reqData.value);
         if (ngoData.status === 'fulfilled' && ngoData.value) setFeaturedNGOs(ngoData.value);
@@ -51,128 +51,136 @@ export const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.mainContainer}>
       <StatusBar barStyle="dark-content" />
-      
-      <ScrollView 
-        style={styles.container} 
+
+      <ScrollView
+        style={styles.container}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ 
-            paddingTop: insets.top + 20, 
-            paddingBottom: 120 
+        contentContainerStyle={{
+          paddingTop: insets.top + 20,
+          paddingBottom: 120
         }}
         scrollEnabled={true}
       >
-        {/* HEADER SECTION */}
-        <View style={styles.header}>
-            <View style={styles.greetingBox}>
-              <Text style={styles.greetingHeader}>Hello, {user.fullName.split(' ')[0]}</Text>
-              <Text style={styles.welcomeSub}>Active community member</Text>
-            </View>
-            <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.navigate('Profile')}>
-               <Avatar.Image size={44} source={{ uri: user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100' }} />
-            </TouchableOpacity>
-        </View>
-
-        {/* SEARCH SECTION */}
-        <View style={styles.searchSection}>
-          <View style={styles.searchBox}>
-             <MaterialCommunityIcons name="magnify" size={24} color="#94A3B8" />
-             <TextInput 
-               placeholder="Search initiatives..." 
-               style={styles.searchInput}
-               placeholderTextColor="#94A3B8"
-               value={searchQuery}
-               onChangeText={setSearchQuery}
-             />
+        {isLoading ? (
+          <View style={[styles.mainLoader, { marginTop: SCREEN_WIDTH * 0.5 }]}>
+            <ActivityIndicator color="#1A1C1E" size="large" />
           </View>
-        </View>
+        ) : (
+          <>
+            {/* HEADER SECTION */}
+            <View style={styles.header}>
+              <View style={styles.greetingBox}>
+                <Text style={styles.greetingHeader}>Hello, {user.fullName.split(' ')[0]}</Text>
+                <Text style={styles.welcomeSub}>Active community member</Text>
+              </View>
+              <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.navigate('Profile')}>
+                <Avatar.Image size={44} source={{ uri: user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100' }} />
+              </TouchableOpacity>
+            </View>
 
-        {/* QUICK HUB SECTION */}
-        <View style={styles.hubSection}>
-           <Text style={styles.sectionTitle}>Community Hub</Text>
-           <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false} 
-              contentContainerStyle={styles.horizontalScrollContent}
-           >
-              {QUICK_ACTIONS.map(action => (
-                <TouchableOpacity 
-                   key={action.id} 
-                   style={[styles.actionCard, { backgroundColor: action.color }]}
-                   onPress={() => navigation.navigate(action.route)}
-                >
-                   <MaterialCommunityIcons name={action.icon} size={28} color="#1A1C1E" />
-                   <Text style={styles.actionText}>{action.title}</Text>
-                </TouchableOpacity>
-              ))}
-           </ScrollView>
-        </View>
+            {/* SEARCH SECTION */}
+            <View style={styles.searchSection}>
+              <View style={styles.searchBox}>
+                <MaterialCommunityIcons name="magnify" size={24} color="#94A3B8" />
+                <TextInput
+                  placeholder="Search initiatives..."
+                  style={styles.searchInput}
+                  placeholderTextColor="#94A3B8"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                />
+              </View>
+            </View>
 
-        {/* STATS SECTION */}
-        <View style={styles.statsSection}>
-            <View style={styles.statsCard}>
+            {/* QUICK HUB SECTION */}
+            <View style={styles.hubSection}>
+              <Text style={styles.sectionTitle}>Community Hub</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.horizontalScrollContent}
+              >
+                {QUICK_ACTIONS.map(action => (
+                  <TouchableOpacity
+                    key={action.id}
+                    style={[styles.actionCard, { backgroundColor: action.color }]}
+                    onPress={() => navigation.navigate(action.route)}
+                  >
+                    <MaterialCommunityIcons name={action.icon} size={28} color="#1A1C1E" />
+                    <Text style={styles.actionText}>{action.title}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* STATS SECTION */}
+            <View style={styles.statsSection}>
+              <View style={styles.statsCard}>
                 <View style={styles.statItem}>
-                   <Text style={styles.statVal}>840</Text>
-                   <Text style={styles.statLabel}>Local Partners</Text>
+                  <Text style={styles.statVal}>{stats.volunteers > 1000 ? `${(stats.volunteers / 1000).toFixed(1)}k` : stats.volunteers}</Text>
+                  <Text style={styles.statLabel}>Local Partners</Text>
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
-                   <Text style={styles.statVal}>2.4k</Text>
-                   <Text style={styles.statLabel}>Needs Solved</Text>
+                  <Text style={styles.statVal}>{stats.solvedNeeds || 0}</Text>
+                  <Text style={styles.statLabel}>Needs Solved</Text>
                 </View>
+              </View>
             </View>
-        </View>
 
-        {/* NGO INITIATIVES SECTION */}
-        <View style={styles.feedSection}>
-            <View style={styles.sectionHeader}>
-               <Text style={styles.sectionTitle_Feed}>NGO Initiatives</Text>
-               <TouchableOpacity onPress={() => navigation.navigate('Events')}>
+            {/* NGO INITIATIVES SECTION */}
+            <View style={styles.feedSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle_Feed}>NGO Initiatives</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('Events')}>
                   <Text style={styles.seeAllText}>EXPLORE ALL</Text>
-               </TouchableOpacity>
-            </View>
-            <ScrollView 
-               horizontal 
-               showsHorizontalScrollIndicator={false} 
-               contentContainerStyle={styles.horizontalScrollContent}
-            >
-               {featuredNGOs.map((ngo, idx) => (
-                 <TouchableOpacity key={idx} style={styles.featuredNgoCard}>
+                </TouchableOpacity>
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.horizontalScrollContent}
+              >
+                {featuredNGOs.map((ngo, idx) => (
+                  <TouchableOpacity key={idx} style={styles.featuredNgoCard}>
                     <Image source={{ uri: `https://images.unsplash.com/photo-${1500000000000 + idx}?w=400` }} style={styles.featuredImage} />
                     <View style={styles.featuredOverlay}>
-                       <Text style={styles.featuredName}>{ngo.name || 'Giving Hope'}</Text>
-                       <Text style={styles.featuredLocation}>{ngo.location || 'Chennai'}</Text>
+                      <Text style={styles.featuredName}>{ngo.name || 'Giving Hope'}</Text>
+                      <Text style={styles.featuredLocation}>{ngo.location || 'Chennai'}</Text>
                     </View>
-                 </TouchableOpacity>
-               ))}
-            </ScrollView>
-        </View>
-
-        {/* COMMUNITY NEEDS SECTION */}
-        <View style={styles.feedSection}>
-            <View style={styles.sectionHeader}>
-               <Text style={styles.sectionTitle_Feed}>Support Needs</Text>
-               <TouchableOpacity onPress={() => navigation.navigate('CommunityFeed')}>
-                  <Text style={styles.seeAllText}>VIEW HUB</Text>
-               </TouchableOpacity>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             </View>
-            {nearbyRequests.length > 0 ? nearbyRequests.map((req, idx) => (
-              <TouchableOpacity key={idx} style={styles.reqCard} onPress={() => navigation.navigate('RequestDetails', { requestId: req.id })}>
-                 <View style={styles.reqIconBox}>
+
+            {/* COMMUNITY NEEDS SECTION */}
+            <View style={styles.feedSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle_Feed}>Support Needs</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('CommunityFeed')}>
+                  <Text style={styles.seeAllText}>VIEW HUB</Text>
+                </TouchableOpacity>
+              </View>
+              {nearbyRequests.length > 0 ? nearbyRequests.map((req, idx) => (
+                <TouchableOpacity key={idx} style={styles.reqCard} onPress={() => navigation.navigate('RequestDetails', { requestId: req.id })}>
+                  <View style={styles.reqIconBox}>
                     <MaterialCommunityIcons name="broadcast" size={24} color="#EF4444" />
-                 </View>
-                 <View style={styles.reqInfo}>
+                  </View>
+                  <View style={styles.reqInfo}>
                     <Text style={styles.reqTitle} numberOfLines={1}>{req.title}</Text>
                     <Text style={styles.reqSub}>{req.location} • {req.votes || 0} Highlights</Text>
-                 </View>
-                 <MaterialCommunityIcons name="chevron-right" size={24} color="#CBD5E1" />
-              </TouchableOpacity>
-            )) : (
-              <View style={styles.emptyCard}>
-                 <Text style={styles.emptyText}>No reports yet</Text>
-              </View>
-            )}
-        </View>
+                  </View>
+                  <MaterialCommunityIcons name="chevron-right" size={24} color="#CBD5E1" />
+                </TouchableOpacity>
+              )) : (
+                <View style={styles.emptyCard}>
+                  <Text style={styles.emptyText}>No reports yet</Text>
+                </View>
+              )}
+            </View>
 
+          </>
+        )}
       </ScrollView>
     </View>
   );
@@ -185,6 +193,10 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  mainLoader: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   header: {
     flexDirection: 'row',
