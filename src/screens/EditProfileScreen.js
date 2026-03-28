@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator, Alert, Dimensions } from 'react-native';
-import { Text, TextInput, Avatar, Divider, Button } from 'react-native-paper';
+import { View, StyleSheet, TouchableOpacity, StatusBar, ActivityIndicator, Alert, Dimensions } from 'react-native';
+import { Text, TextInput, Avatar, Button } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import * as Location from 'expo-location';
 import { api } from '../services/api';
+import { ProfileSubScreenWrapper } from '../components/ProfileSubScreenWrapper';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const PRIMARY_DARK = '#1A1C1E';
+const ACCENT_BLUE = '#3B82F6';
 
 export const EditProfileScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -21,6 +25,7 @@ export const EditProfileScreen = ({ navigation }) => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -45,6 +50,28 @@ export const EditProfileScreen = ({ navigation }) => {
     fetchProfile();
   }, []);
 
+  const detectLocation = async () => {
+    setIsDetectingLocation(true);
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert("Permission Required", "Location access is needed to sync your community base.");
+        return;
+      }
+      let location = await Location.getCurrentPositionAsync({});
+      let reverse = await Location.reverseGeocodeAsync(location.coords);
+      if (reverse && reverse.length > 0) {
+        const addr = `${reverse[0].district || reverse[0].city || 'Chennai'}, ${reverse[0].region || 'India'}`;
+        setFormData(prev => ({ ...prev, location: addr }));
+      }
+    } catch (err) {
+      console.warn("Location Error:", err);
+      Alert.alert("Sync Failed", "Unable to detect high-fidelity location pulse.");
+    } finally {
+      setIsDetectingLocation(false);
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -63,34 +90,31 @@ export const EditProfileScreen = ({ navigation }) => {
     }
   };
 
-  const CustomHeader = () => (
-    <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-       <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-          <MaterialCommunityIcons name="chevron-left" size={32} color="#1A1C1E" />
-       </TouchableOpacity>
-       <View>
-          <Text style={styles.headerTitle}>Edit Profile</Text>
-          <Text style={styles.headerSub}>Customize community persona</Text>
-       </View>
-       <View style={{ width: 44 }} />
-    </View>
-  );
-
   return (
-    <View style={styles.mainContainer}>
-      <StatusBar barStyle="dark-content" />
-      <CustomHeader />
-      
+    <ProfileSubScreenWrapper 
+      title="Edit Profile" 
+      subtitle="Customize community persona"
+      navigation={navigation}
+      footer={
+        <Button 
+          mode="contained" 
+          onPress={handleSave} 
+          loading={isSaving}
+          disabled={isSaving}
+          style={styles.saveBtn}
+          contentStyle={styles.saveBtnContent}
+          labelStyle={styles.saveBtnLabel}
+        >
+          Synchronize Changes
+        </Button>
+      }
+    >
       {isLoading ? (
         <View style={styles.centerLoader}>
-           <ActivityIndicator color="#1A1C1E" size="large" />
+           <ActivityIndicator color={PRIMARY_DARK} size="large" />
         </View>
       ) : (
-        <ScrollView 
-          style={styles.container} 
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        >
+        <View style={styles.formContainer}>
           {/* AVATAR SECTION */}
           <View style={styles.avatarSection}>
              <View style={styles.avatarWrapper}>
@@ -106,136 +130,92 @@ export const EditProfileScreen = ({ navigation }) => {
              <Text style={styles.photoTip}>Touch camera to update photo</Text>
           </View>
 
-          {/* FORM SECTIONS (MASTER RHYTHM 40PX) */}
-          <View style={styles.formContainer}>
-             <Text style={styles.sectionHeader}>Personal Manifest</Text>
-             
-             <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Display Name</Text>
-                <TextInput
-                  value={formData.name}
-                  onChangeText={(text) => setFormData({ ...formData, name: text })}
-                  style={styles.input}
-                  mode="flat"
-                  underlineColor="transparent"
-                  activeUnderlineColor="transparent"
-                  placeholder="Enter full name"
-                  placeholderTextColor="#94A3B8"
-                />
-             </View>
-
-             <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Contact Phone</Text>
-                <TextInput
-                  value={formData.phone}
-                  onChangeText={(text) => setFormData({ ...formData, phone: text })}
-                  style={styles.input}
-                  mode="flat"
-                  underlineColor="transparent"
-                  activeUnderlineColor="transparent"
-                  keyboardType="phone-pad"
-                  placeholder="+91 XXXX XXXX"
-                  placeholderTextColor="#94A3B8"
-                />
-             </View>
-
-             <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Location Base</Text>
-                <TextInput
-                  value={formData.location}
-                  onChangeText={(text) => setFormData({ ...formData, location: text })}
-                  style={styles.input}
-                  mode="flat"
-                  underlineColor="transparent"
-                  activeUnderlineColor="transparent"
-                  placeholder="City, Country"
-                  placeholderTextColor="#94A3B8"
-                />
-             </View>
-
-             <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Impact Bio</Text>
-                <TextInput
-                  value={formData.bio}
-                  onChangeText={(text) => setFormData({ ...formData, bio: text })}
-                  style={[styles.input, { height: 120, paddingTop: 16 }]}
-                  mode="flat"
-                  multiline
-                  underlineColor="transparent"
-                  activeUnderlineColor="transparent"
-                  placeholder="Share your passion for community support..."
-                  placeholderTextColor="#94A3B8"
-                />
-             </View>
-
-             {/* SIGNATURE ACTION */}
-             <TouchableOpacity 
-                style={[styles.saveBtn, isSaving && { opacity: 0.7 }]} 
-                onPress={handleSave}
-                disabled={isSaving}
-                activeOpacity={0.8}
-             >
-                {isSaving ? (
-                  <ActivityIndicator color="#FFFFFF" />
-                ) : (
-                  <>
-                    <MaterialCommunityIcons name="check-circle" size={20} color="#FFFFFF" />
-                    <Text style={styles.saveText}>Commmit Changes</Text>
-                  </>
-                )}
-             </TouchableOpacity>
+          {/* FORM SECTIONS */}
+          <View style={styles.inputGroup}>
+             <Text style={styles.inputLabel}>Display Name</Text>
+             <TextInput
+               value={formData.name}
+               onChangeText={(text) => setFormData({ ...formData, name: text })}
+               style={styles.input}
+               mode="outlined"
+               outlineColor="#F1F5F9"
+               activeOutlineColor={PRIMARY_DARK}
+               placeholder="Enter full name"
+               placeholderTextColor="#94A3B8"
+               textColor={PRIMARY_DARK}
+             />
           </View>
-        </ScrollView>
+
+          <View style={styles.inputGroup}>
+             <Text style={styles.inputLabel}>Contact Phone</Text>
+             <TextInput
+               value={formData.phone}
+               onChangeText={(text) => setFormData({ ...formData, phone: text })}
+               style={styles.input}
+               mode="outlined"
+               outlineColor="#F1F5F9"
+               activeOutlineColor={PRIMARY_DARK}
+               keyboardType="phone-pad"
+               placeholder="+91 XXXX XXXX"
+               placeholderTextColor="#94A3B8"
+               textColor={PRIMARY_DARK}
+             />
+          </View>
+
+          <View style={styles.inputGroup}>
+             <Text style={styles.inputLabel}>Location Base</Text>
+             <TextInput
+               value={formData.location}
+               onChangeText={(text) => setFormData({ ...formData, location: text })}
+               style={styles.input}
+               mode="outlined"
+               outlineColor="#F1F5F9"
+               activeOutlineColor={PRIMARY_DARK}
+               placeholder="Detecting..."
+               placeholderTextColor="#94A3B8"
+               textColor={PRIMARY_DARK}
+               right={<TextInput.Icon 
+                        icon={isDetectingLocation ? () => <ActivityIndicator size="small" color={ACCENT_BLUE} /> : "map-marker-radius"} 
+                        onPress={detectLocation}
+                        color={ACCENT_BLUE} 
+                      />}
+             />
+          </View>
+
+          <View style={styles.inputGroup}>
+             <Text style={styles.inputLabel}>Biography</Text>
+             <TextInput
+               value={formData.bio}
+               onChangeText={(text) => setFormData({ ...formData, bio: text })}
+               style={[styles.input, styles.textArea]}
+               mode="outlined"
+               outlineColor="#F1F5F9"
+               activeOutlineColor={PRIMARY_DARK}
+               multiline
+               numberOfLines={5}
+               placeholder="Tell the community about your mission..."
+               placeholderTextColor="#94A3B8"
+               textColor={PRIMARY_DARK}
+             />
+          </View>
+        </View>
       )}
-    </View>
+    </ProfileSubScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  container: {
-    flex: 1,
-  },
   centerLoader: {
-    flex: 1,
+    height: 400,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    marginBottom: 40, // Master Rhythm
-    gap: 20,
-  },
-  backBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 18, // Geometric Family
-    backgroundColor: '#F8F9FA',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '910',
-    color: '#1A1C1E',
-    letterSpacing: -0.5,
-  },
-  headerSub: {
-    fontSize: 12,
-    color: '#94A3B8',
-    fontWeight: '700',
-    marginTop: 2,
+  formContainer: {
+    paddingBottom: 40,
   },
   avatarSection: {
     alignItems: 'center',
-    marginBottom: 40, // Master Rhythm
+    marginBottom: 40,
   },
   avatarWrapper: {
     position: 'relative',
@@ -254,7 +234,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#1A1C1E',
+    backgroundColor: PRIMARY_DARK,
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -271,56 +251,39 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
-  formContainer: {
-    paddingHorizontal: 24,
-  },
-  sectionHeader: {
-    fontSize: 11,
-    fontWeight: '910',
-    color: '#94A3B8',
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-    marginBottom: 24,
-  },
   inputGroup: {
-    marginBottom: 24, // Internal Rhythm
+    marginBottom: 24,
   },
   inputLabel: {
     fontSize: 13,
     fontWeight: '900',
-    color: '#1A1C1E',
+    color: PRIMARY_DARK,
     marginBottom: 10,
     marginLeft: 4,
   },
   input: {
-    backgroundColor: '#F8F9FA',
-    borderRadius: 20, // Form Geometric Radius
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 28, // Luxury 4.0 Rounded Corners
     fontSize: 15,
     fontWeight: '700',
-    color: '#1A1C1E',
-    paddingHorizontal: 4, // TextInput inside handles padding
+  },
+  textArea: {
+    height: 150,
+    textAlignVertical: 'top',
   },
   saveBtn: {
-    marginTop: 16,
-    backgroundColor: '#1A1C1E',
+    backgroundColor: PRIMARY_DARK,
     height: 65,
     borderRadius: 35, // Master Premium Radius
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
   },
-  saveText: {
-    color: '#FFFFFF',
+  saveBtnContent: {
+    height: 65,
+  },
+  saveBtnLabel: {
     fontSize: 16,
     fontWeight: '910',
     letterSpacing: -0.5,
+    color: '#FFFFFF',
   }
 });
