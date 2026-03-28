@@ -1,62 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
-import { Text, Card, Avatar, useTheme, Button, IconButton, Divider, ProgressBar } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, Image, TouchableOpacity, StatusBar, ActivityIndicator, Alert } from 'react-native';
+import { Text, Divider, Button } from 'react-native-paper';
+import { ProfileSubScreenWrapper } from '../components/ProfileSubScreenWrapper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { api } from '../services/api';
 
-const REQUEST_TIMELINE = [
-  { id: '1', title: 'Request Submitted', date: '15 March, 10:30 AM', status: 'completed', icon: 'file-document-edit' },
-  { id: '2', title: 'Volunteer Assigned', date: '15 March, 02:45 PM', status: 'completed', icon: 'account-check' },
-  { id: '3', title: 'In Progress', date: '16 March, 09:15 AM', status: 'active', icon: 'progress-clock' },
-  { id: '4', title: 'Verification', date: 'Pending', status: 'upcoming', icon: 'shield-check' },
-  { id: '5', title: 'Completed', date: 'Pending', status: 'upcoming', icon: 'check-decagram' },
-];
-
 export const RequestDetailsScreen = ({ route, navigation }) => {
-  const theme = useTheme();
   const { requestId } = route.params || {};
-
-  const [request, setRequest] = useState({
-    title: 'Loading Request...',
-    category: 'General',
-    icon: 'help-circle-outline',
-    location: 'Loading...',
-    distance: '-',
-    date: '-',
-    time: '-',
-    description: 'Fetching details from the community server...',
-    status: 'Pending',
-    statusColor: '#F59E0B',
-    evidenceImages: [],
-    assignedVolunteer: null
-  });
-
+  const [request, setRequest] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isVoting, setIsVoting] = useState(false);
 
   useEffect(() => {
     if (!requestId) return;
-
     const fetchDetails = async () => {
       try {
         const data = await api.getRequestDetails(requestId);
-        if (data) {
-          setRequest({
-            title: data.title,
-            category: data.category || 'Community',
-            icon: data.type === 'Urgent' ? 'alert-circle-outline' : 'hand-heart-outline',
-            location: data.location || 'Chennai, India',
-            distance: 'Nearby',
-            date: data.eventDate ? new Date(data.eventDate).toLocaleDateString() : 'N/A',
-            time: data.eventDate ? new Date(data.eventDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A',
-            description: data.description,
-            status: data.status || 'Active',
-            statusColor: data.type === 'Urgent' ? '#EF4444' : '#3B82F6',
-            evidenceImages: data.media || [
-              'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400'
-            ],
-            assignedVolunteer: data.assignedVolunteer || null
-          });
-        }
+        setRequest(data);
       } catch (error) {
         console.warn("API Error (RequestDetails):", error);
       } finally {
@@ -66,393 +26,427 @@ export const RequestDetailsScreen = ({ route, navigation }) => {
     fetchDetails();
   }, [requestId]);
 
-  const renderTimelineItem = (item, index) => {
-    const isActive = item.status === 'active';
-    const isCompleted = item.status === 'completed';
-    
-    return (
-      <View key={item.id} style={styles.timelineItem}>
-        <View style={styles.timelineLeft}>
-          <View style={[
-            styles.timelineIcon, 
-            { backgroundColor: isCompleted ? '#10B981' : isActive ? theme.colors.primary : '#F3F4F6' }
-          ]}>
-            <MaterialCommunityIcons 
-              name={isCompleted ? 'check' : item.icon} 
-              size={18} 
-              color={isCompleted || isActive ? '#FFF' : '#9CA3AF'} 
-            />
-          </View>
-          {index !== REQUEST_TIMELINE.length - 1 && (
-            <View style={[
-              styles.timelineConnector,
-              { backgroundColor: isCompleted ? '#10B981' : '#E5E7EB' }
-            ]} />
-          )}
-        </View>
-        <View style={styles.timelineRight}>
-          <Text variant="titleSmall" style={[styles.timelineTitle, isActive && { color: theme.colors.primary }]}>
-            {item.title}
-          </Text>
-          <Text variant="labelSmall" style={styles.timelineDate}>{item.date}</Text>
-        </View>
-      </View>
+  const handleHighlight = async () => {
+    if (isVoting) return;
+    setIsVoting(true);
+    try {
+      const result = await api.voteRequest(requestId);
+      setRequest(prev => ({ ...prev, votes: result.votes }));
+    } catch (error) {
+       Alert.alert("Highlight Failed", "You might have already highlighted this need.");
+    } finally {
+      setIsVoting(false);
+    }
+  };
+
+  const handleDonate = () => {
+    Alert.prompt(
+      "Support with Funds",
+      "Enter the amount you would like to contribute and help resolve this community need.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Contribute", 
+          onPress: async (amount) => {
+            if (!amount || isNaN(amount)) return;
+            try {
+              await api.donateToRequest(requestId, parseFloat(amount));
+              Alert.alert("Thank You!", "Your contribution has been logged for community impact.");
+            } catch (err) {
+              Alert.alert("Error", "Failed to process contribution.");
+            }
+          }
+        }
+      ],
+      "plain-text"
     );
   };
 
-  return (
-    <View style={styles.container}>
-      {/* Header Overlay */}
-      <View style={styles.header}>
-        <IconButton 
-          icon="arrow-left" 
-          size={24} 
-          onPress={() => navigation.goBack()} 
-          containerColor="rgba(255,255,255,0.9)"
-          iconColor="#1A1C1E"
-        />
-        <Text variant="titleLarge" style={styles.headerTitle}>Help Request</Text>
-        <IconButton icon="share-variant-outline" size={24} iconColor="#1A1C1E" />
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'PENDING': return '#F59E0B';
+      case 'URGENT': return '#EF4444';
+      case 'COMPLETED': return '#10B981';
+      default: return '#3B82F6';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator color="#1A1C1E" />
       </View>
+    );
+  }
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* 1. Main Info Hero */}
-        <Card style={styles.heroCard}>
-          <View style={styles.cardPadding}>
-            <View style={styles.topRow}>
-              <View style={[styles.categoryBadge, { backgroundColor: theme.colors.primary + '15' }]}>
-                <MaterialCommunityIcons name={request.icon} size={16} color={theme.colors.primary} />
-                <Text style={[styles.categoryText, { color: theme.colors.primary }]}>{request.category}</Text>
-              </View>
-              <View style={[styles.statusBadge, { backgroundColor: request.statusColor + '15' }]}>
-                <Text style={[styles.statusLabel, { color: request.statusColor }]}>{request.status}</Text>
-              </View>
+  if (!request) {
+    return (
+      <ProfileSubScreenWrapper title="Details" navigation={navigation}>
+        <View style={styles.emptyContainer}>
+          <MaterialCommunityIcons name="database-off-outline" size={60} color="#F1F5F9" />
+          <Text style={styles.emptyText}>No Data Found</Text>
+        </View>
+      </ProfileSubScreenWrapper>
+    );
+  }
+
+  return (
+    <View style={styles.mainContainer}>
+       <ProfileSubScreenWrapper 
+          title="Community Need" 
+          subtitle={`Ticket ID: ${request.id?.slice(0, 8).toUpperCase()}`} 
+          navigation={navigation}
+       >
+          <StatusBar barStyle="dark-content" />
+          
+          {/* HERO CARD (HUB STYLE) */}
+          <View style={styles.heroCard}>
+            <View style={styles.cardHeader}>
+               <View style={styles.categoryBadge}>
+                  <Text style={styles.categoryText}>{request.category || 'COMMUNITY'}</Text>
+               </View>
+               <View style={[styles.statusPill, { backgroundColor: getStatusColor(request.status) + '15' }]}>
+                  <View style={[styles.statusDot, { backgroundColor: getStatusColor(request.status) }]} />
+                  <Text style={[styles.statusText, { color: getStatusColor(request.status) }]}>{request.status || 'ACTIVE'}</Text>
+               </View>
             </View>
-
-            <Text variant="headlineSmall" style={styles.mainTitle}>{request.title}</Text>
+            
+            <Text style={styles.title}>{request.title}</Text>
             
             <View style={styles.metaGrid}>
-              <View style={styles.metaItem}>
-                <MaterialCommunityIcons name="calendar-clock" size={20} color="#6B7280" />
-                <View>
-                  <Text variant="labelSmall" style={styles.metaLabel}>DATE & TIME</Text>
-                  <Text variant="bodySmall" style={styles.metaValue}>{request.date} • {request.time}</Text>
-                </View>
-              </View>
+               <View style={styles.metaItem}>
+                  <View style={styles.metaIconCircle}>
+                     <MaterialCommunityIcons name="map-marker-outline" size={20} color="#1A1C1E" />
+                  </View>
+                  <View>
+                     <Text style={styles.metaLabel}>LOCATION</Text>
+                     <Text style={styles.metaValue}>{request.location || 'Chennai'}</Text>
+                  </View>
+               </View>
+               <View style={styles.metaItem}>
+                  <View style={styles.metaIconCircle}>
+                     <MaterialCommunityIcons name="chart-bell-curve-cumulative" size={20} color="#1A1C1E" />
+                  </View>
+                  <View>
+                     <Text style={styles.metaLabel}>COMMUNITY SUPPORT</Text>
+                     <Text style={styles.metaValue}>{request.votes || 0} People Highlighted</Text>
+                  </View>
+               </View>
             </View>
 
             <Divider style={styles.divider} />
             
-            <Text variant="titleSmall" style={styles.sectionLabel}>DESCRIPTION</Text>
-            <Text variant="bodyMedium" style={styles.description}>{request.description}</Text>
+            <Text style={styles.sectionLabel}>SITUATION DESCRIPTION</Text>
+            <Text style={styles.description}>{request.description}</Text>
           </View>
-        </Card>
 
-        {/* 2. Map Preview Section */}
-        <View style={styles.section}>
-          <Text variant="titleMedium" style={styles.sectionTitle}>Help Location</Text>
-          <Card style={styles.mapCard}>
-            <Image 
-              source={{ uri: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600' }} 
-              style={styles.mapImage} 
-            />
-            <View style={styles.mapFooter}>
-              <MaterialCommunityIcons name="map-marker-radius" size={24} color={theme.colors.secondary} />
-              <View style={styles.mapText}>
-                <Text variant="titleSmall">{request.location}</Text>
-                <Text variant="bodySmall" style={{ color: '#6B7280' }}>{request.distance}</Text>
-              </View>
-              <Button mode="contained-tonal" compact labelStyle={{ fontSize: 10 }}>NAVIGATE</Button>
+          {/* ACTION HUB (PEER TO PEER) */}
+          <View style={styles.actionHub}>
+             <TouchableOpacity style={styles.highlightBtn} onPress={handleHighlight} activeOpacity={0.7} disabled={isVoting}>
+                <MaterialCommunityIcons 
+                   name={isVoting ? "loading" : "arrow-up-bold-outline"} 
+                   size={28} 
+                   color="#3B82F6" 
+                />
+                <Text style={styles.highlightText}>Highlight Need</Text>
+             </TouchableOpacity>
+             <TouchableOpacity style={styles.donateBtn} onPress={handleDonate} activeOpacity={0.7}>
+                <MaterialCommunityIcons name="heart-flash" size={28} color="#E11D48" />
+                <Text style={styles.donateText}>Support Funds</Text>
+             </TouchableOpacity>
+          </View>
+
+          {/* EVIDENCE GALLERY */}
+          {(request.media && request.media.length > 0) && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Contextual Evidence</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.evidenceGallery}>
+                {request.media.map((img, index) => (
+                  <Image key={index} source={{ uri: img }} style={styles.evidenceImage} />
+                ))}
+              </ScrollView>
             </View>
-          </Card>
-        </View>
+          )}
 
-        {/* 3. Media Evidence Gallery */}
-        <View style={styles.section}>
-          <Text variant="titleMedium" style={styles.sectionTitle}>Request Evidence</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.evidenceGallery}>
-            {request.evidenceImages.map((img, index) => (
-              <TouchableOpacity key={index}>
-                <Image source={{ uri: img }} style={styles.evidenceImage} />
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* 4. Progress Timeline */}
-        <View style={styles.section}>
-          <Text variant="titleMedium" style={styles.sectionTitle}>Live Progress</Text>
-          <Card style={styles.timelineCard}>
-            <View style={styles.cardPadding}>
-              {REQUEST_TIMELINE.map((item, index) => renderTimelineItem(item, index))}
-            </View>
-          </Card>
-        </View>
-
-        {/* 5. Assigned Volunteer */}
-        {request.assignedVolunteer && (
+          {/* LOCATION PREVIEW */}
           <View style={styles.section}>
-            <Text variant="titleMedium" style={styles.sectionTitle}>Assigned Volunteer</Text>
-            <Card style={styles.volunteerCard}>
-              <View style={styles.volunteerContent}>
-                <Avatar.Image size={60} source={{ uri: request.assignedVolunteer.avatar }} />
-                <View style={styles.volunteerText}>
-                  <Text variant="titleLarge" style={styles.volunteerName}>{request.assignedVolunteer.name}</Text>
-                  <View style={styles.ratingRow}>
-                    <MaterialCommunityIcons name="star" size={16} color="#F59E0B" />
-                    <Text variant="labelMedium" style={styles.ratingText}>{request.assignedVolunteer.rating} • {request.assignedVolunteer.completed} Tasks</Text>
-                  </View>
-                </View>
+            <Text style={styles.sectionTitle}>Incident Perimeter</Text>
+            <View style={styles.mapCard}>
+              <Image 
+                source={{ uri: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600' }} 
+                style={styles.mapImage} 
+              />
+              <View style={styles.mapFooter}>
+                <MaterialCommunityIcons name="map-marker-radius" size={24} color="#3B82F6" />
+                <Text style={styles.mapFooterText}>{request.location || 'Reported Location'}</Text>
+                <TouchableOpacity style={styles.navBtn}>
+                   <Text style={styles.navBtnText}>NAVIGATE</Text>
+                </TouchableOpacity>
               </View>
-              <Divider style={styles.volunteerDivider} />
-              <View style={styles.volunteerActions}>
-                <Button 
-                  mode="outlined" 
-                  icon="message-text-outline" 
-                  style={styles.actionBtn}
-                  textColor={theme.colors.primary}
-                >Message</Button>
-                <Button 
-                  mode="contained" 
-                  icon="phone-outline" 
-                  style={styles.actionBtn}
-                  buttonColor={theme.colors.primary}
-                >Call Volunteer</Button>
-              </View>
-            </Card>
+            </View>
           </View>
-        )}
 
-        <View style={{ height: 160 }} />
-      </ScrollView>
+          <View style={{ height: 100 }} />
+       </ProfileSubScreenWrapper>
+
+       {/* FLOATING ACTION */}
+       <View style={[styles.floatingAction, { paddingBottom: 24 }]}>
+          <TouchableOpacity style={styles.mainActionBtn} activeOpacity={0.8} onPress={() => navigation.navigate('Events')}>
+             <MaterialCommunityIcons name="account-group" size={20} color="#FFFFFF" />
+             <Text style={styles.mainActionText}>Find Supporting NGOs</Text>
+          </TouchableOpacity>
+       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  mainContainer: {
     flex: 1,
-    backgroundColor: '#FFF9F0',
+    backgroundColor: '#FFFFFF',
   },
-  header: {
-    flexDirection: 'row',
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 50,
-    paddingHorizontal: 15,
-    paddingBottom: 10,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 100,
-  },
-  headerTitle: {
-    fontWeight: '900',
-    color: '#1A1C1E',
-  },
-  scrollContent: {
-    paddingTop: 110,
+    backgroundColor: '#FFFFFF',
   },
   heroCard: {
-    marginHorizontal: 20,
-    marginBottom: 25,
-    borderRadius: 36,
-    backgroundColor: '#FFF',
-    elevation: 8,
-    shadowColor: '#1E4D2B',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-  },
-  cardPadding: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 35,
     padding: 24,
+    borderWidth: 1,
+    borderColor: '#F8F9FA',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
+    marginBottom: 25,
   },
-  topRow: {
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   categoryBadge: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 14,
+  },
+  categoryText: {
+    fontSize: 10,
+    fontWeight: '910',
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  statusPill: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
-    gap: 6,
+    gap: 8,
   },
-  categoryText: {
-    fontWeight: 'bold',
-    fontSize: 12,
-    textTransform: 'uppercase',
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 10,
+  statusText: {
+    fontSize: 11,
+    fontWeight: '910',
   },
-  statusLabel: {
-    fontSize: 10,
-    fontWeight: '900',
-    textTransform: 'uppercase',
-  },
-  mainTitle: {
-    fontWeight: '900',
+  title: {
+    fontSize: 22,
+    fontWeight: '910',
     color: '#1A1C1E',
-    marginBottom: 20,
+    marginBottom: 25,
+    lineHeight: 30,
+    letterSpacing: -0.5,
   },
   metaGrid: {
-    gap: 12,
+    gap: 18,
   },
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 15,
+    gap: 16,
+  },
+  metaIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 15,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   metaLabel: {
-    color: '#9CA3AF',
-    fontWeight: 'bold',
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#94A3B8',
     letterSpacing: 1,
   },
   metaValue: {
-    color: '#344054',
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '910',
+    color: '#1A1C1E',
+    marginTop: 2,
   },
   divider: {
-    marginVertical: 24,
-    backgroundColor: '#F3F4F6',
+    marginVertical: 25,
+    backgroundColor: '#F8F9FA',
   },
   sectionLabel: {
-    fontWeight: '900',
-    color: '#9CA3AF',
-    marginBottom: 10,
-    fontSize: 12,
-    letterSpacing: 1,
+    fontSize: 11,
+    fontWeight: '910',
+    color: '#94A3B8',
+    letterSpacing: 1.5,
+    marginBottom: 12,
   },
   description: {
-    color: '#4B5563',
-    lineHeight: 24,
     fontSize: 15,
+    color: '#475569',
+    lineHeight: 25,
+    fontWeight: '600',
+  },
+  actionHub: {
+    flexDirection: 'row',
+    gap: 15,
+    marginBottom: 35,
+  },
+  highlightBtn: {
+    flex: 1,
+    height: 100,
+    backgroundColor: '#F0F9FF',
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E0F2FE',
+  },
+  highlightText: {
+    fontSize: 13,
+    fontWeight: '910',
+    color: '#3B82F6',
+    marginTop: 8,
+  },
+  donateBtn: {
+    flex: 1,
+    height: 100,
+    backgroundColor: '#FFF1F2',
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FFE4E6',
+  },
+  donateText: {
+    fontSize: 13,
+    fontWeight: '910',
+    color: '#E11D48',
+    marginTop: 8,
   },
   section: {
-    marginHorizontal: 20,
-    marginBottom: 30,
+    marginBottom: 35,
   },
   sectionTitle: {
-    fontWeight: '900',
-    marginBottom: 15,
-    color: '#1A1C1E',
     fontSize: 18,
-  },
-  mapCard: {
-    borderRadius: 28,
-    overflow: 'hidden',
-    backgroundColor: '#FFF',
-    elevation: 4,
-  },
-  mapImage: {
-    height: 150,
-    width: '100%',
-  },
-  mapFooter: {
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  mapText: {
-    flex: 1,
+    fontWeight: '910',
+    color: '#1A1C1E',
+    marginBottom: 18,
   },
   evidenceGallery: {
     flexDirection: 'row',
   },
   evidenceImage: {
-    width: 140,
-    height: 100,
-    borderRadius: 20,
+    width: 200,
+    height: 140,
+    borderRadius: 30,
     marginRight: 15,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
-  timelineCard: {
-    borderRadius: 28,
-    backgroundColor: '#FFF',
-    elevation: 2,
-  },
-  timelineItem: {
-    flexDirection: 'row',
-    minHeight: 70,
-  },
-  timelineLeft: {
-    alignItems: 'center',
-    marginRight: 20,
-  },
-  timelineIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 2,
-  },
-  timelineConnector: {
-    width: 2,
-    flex: 1,
-    marginVertical: -5,
-  },
-  timelineRight: {
-    flex: 1,
-    paddingBottom: 25,
-  },
-  timelineTitle: {
-    fontWeight: '800',
-    fontSize: 16,
-  },
-  timelineDate: {
-    color: '#9CA3AF',
-    marginTop: 4,
-    fontWeight: '600',
-  },
-  volunteerCard: {
-    borderRadius: 32,
-    backgroundColor: '#FFF',
-    elevation: 4,
+  mapCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 35,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#F8F9FA',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
   },
-  volunteerContent: {
+  mapImage: {
+    width: '100%',
+    height: 160,
+  },
+  mapFooter: {
+    padding: 24,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
+    gap: 12,
   },
-  volunteerText: {
+  mapFooterText: {
     flex: 1,
-    marginLeft: 20,
-  },
-  volunteerName: {
-    fontWeight: '900',
+    fontSize: 14,
+    fontWeight: '910',
     color: '#1A1C1E',
   },
-  ratingRow: {
+  navBtn: {
+    backgroundColor: '#1A1C1E',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 14,
+  },
+  navBtnText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  floatingAction: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 24,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  mainActionBtn: {
+    backgroundColor: '#1A1C1E',
+    height: 60,
+    borderRadius: 24,
     flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 4,
-    gap: 6,
+    gap: 12,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
   },
-  ratingText: {
-    color: '#6B7280',
-    fontWeight: 'bold',
-    fontSize: 12,
+  mainActionText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '910',
+    letterSpacing: 0.5,
   },
-  volunteerDivider: {
-    backgroundColor: '#F9FAFB',
+  emptyContainer: {
+    alignItems: 'center',
+    marginTop: 100,
   },
-  volunteerActions: {
-    flexDirection: 'row',
-    padding: 15,
-    gap: 10,
-    backgroundColor: '#F9FAFB',
-  },
-  actionBtn: {
-    flex: 1,
-    borderRadius: 16,
+  emptyText: {
+    marginTop: 20,
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#94A3B8',
   }
 });

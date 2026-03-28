@@ -84,6 +84,29 @@ export const api = {
     if (!res.ok) throw new Error('Failed to fetch activity');
     return res.json();
   },
+  getMyRequests: async () => {
+    const res = await fetch(`${API_BASE_URL}/users/me/requests`, { headers: await getHeaders() });
+    if (!res.ok) throw new Error('Failed to fetch my requests');
+    return res.json();
+  },
+  getJoinedEvents: async () => {
+    const res = await fetch(`${API_BASE_URL}/users/me/events`, { headers: await getHeaders() });
+    if (!res.ok) throw new Error('Failed to fetch joined events');
+    return res.json();
+  },
+  getSecurityStatus: async () => {
+    const res = await fetch(`${API_BASE_URL}/users/me/security`, { headers: await getHeaders() });
+    if (!res.ok) throw new Error('Failed to fetch security status');
+    return res.json();
+  },
+  toggleVolunteerMode: async () => {
+    const res = await fetch(`${API_BASE_URL}/users/me/toggle-volunteer`, { 
+      method: 'POST',
+      headers: await getHeaders() 
+    });
+    if (!res.ok) throw new Error('Failed to toggle volunteer mode');
+    return res.json();
+  },
 
   // ----- REQUESTS ----- //
   getRequests: async (limit = 10) => {
@@ -103,6 +126,22 @@ export const api = {
   getRequestDetails: async (id) => {
     const res = await fetch(`${API_BASE_URL}/requests/${id}`, { headers: await getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch request details');
+    return res.json();
+  },
+  voteRequest: async (id) => {
+    const res = await fetch(`${API_BASE_URL}/requests/${id}/vote`, { 
+      method: 'POST',
+      headers: await getHeaders() 
+    });
+    if (!res.ok) throw new Error('Failed to vote for request');
+    return res.json();
+  },
+  donateToRequest: async (id, amount) => {
+    const res = await fetch(`${API_BASE_URL}/requests/${id}/donate?amount=${amount}`, { 
+      method: 'POST',
+      headers: await getHeaders() 
+    });
+    if (!res.ok) throw new Error('Failed to donate to request');
     return res.json();
   },
 

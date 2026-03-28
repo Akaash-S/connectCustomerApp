@@ -1,177 +1,190 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, StatusBar, Alert } from 'react-native';
-import { useTheme, IconButton, Text, Avatar, Divider } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Switch, Dimensions, Image } from 'react-native';
+import { Text, Avatar, List, Divider, Button, Card, ProgressBar, Badge } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { api } from '../services/api';
-import { auth } from '../services/auth';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const InfoItem = ({ icon, label, value }) => (
-  <View style={styles.infoItem}>
-    <View style={styles.infoIconBox}>
-      <MaterialCommunityIcons name={icon} size={22} color="#1A1C1E" />
-    </View>
-    <View style={styles.infoTextColumn}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
-    </View>
-  </View>
-);
+const ACHIEVEMENTS = [
+  { id: '1', title: 'First Support', icon: 'heart', color: '#FFF1F2' },
+  { id: '2', title: 'Community Pillar', icon: 'pillar', color: '#F0F9FF' },
+  { id: '3', title: 'Active Voter', icon: 'vote', color: '#F0FDF4' },
+  { id: '4', title: 'Kind Heart', icon: 'hand-heart', color: '#FFF7ED' },
+];
 
 export const ProfileScreen = ({ navigation }) => {
-  const theme = useTheme();
   const insets = useSafeAreaInsets();
   
   const [user, setUser] = useState({
-    fullName: "Akash",
-    email: "akash@example.com",
-    location: "Chennai, India",
+    fullName: 'Akash',
+    email: 'akash@connect.com',
     avatarUrl: null,
-    isVolunteer: false
+    impactScore: 450,
+    trustLevel: 0.75,
+    joinedEvents: 8,
+    totalDonated: 1250,
+    votesCast: 42
   });
-
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const fetchProfile = async () => {
       try {
-        const profileData = await api.getUserProfile();
-        if (profileData) {
-          setUser({
-            fullName: profileData.fullName || "User",
-            email: profileData.email,
-            location: profileData.location || "Unknown",
-            avatarUrl: profileData.avatarUrl,
-            isVolunteer: profileData.isVolunteer || false
-          });
-        }
+        const data = await api.getUserProfile();
+        setUser(data);
       } catch (error) {
-        console.warn("API Error (Profile):", error);
+        console.warn("Profile fetch failed:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchProfileData();
+    fetchProfile();
   }, []);
-
-  const handleLogout = async () => {
-    Alert.alert(
-      "Sign Out",
-      "Are you sure you want to sign out?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Sign Out", 
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await auth.signOut();
-              navigation.replace('Login');
-            } catch (error) {
-              console.error("Logout error:", error);
-            }
-          }
-        }
-      ]
-    );
-  };
 
   return (
     <View style={styles.mainContainer}>
       <StatusBar barStyle="dark-content" />
+      
       <ScrollView 
-        style={styles.container}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        style={styles.container} 
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: insets.top, paddingBottom: 120 }}
+        scrollEnabled={true}
       >
-        {/* HEADER */}
+        {/* INTEGRATED SINGLE-LAYER HEADER (HUB STYLE) */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <MaterialCommunityIcons name="chevron-left" size={28} color="#1A1C1E" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profile</Text>
-          <View style={{ width: 44 }} /> 
-        </View>
-
-        {/* AVATAR SECTION */}
-        <View style={styles.avatarSection}>
-          <View style={styles.avatarWrapper}>
-            <Avatar.Image 
-              size={120} 
-              source={{ uri: user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200' }} 
-            />
-            <TouchableOpacity style={styles.editAvatarBtn} onPress={() => navigation.navigate('EditProfile')}>
-              <MaterialCommunityIcons name="pencil-outline" size={18} color="#1A1C1E" />
+            <View>
+              <Text style={styles.headerTitle}>My Hub</Text>
+              <Text style={styles.headerSub}>Community footprint</Text>
+            </View>
+            <TouchableOpacity style={styles.profileBadgePill}>
+               <MaterialCommunityIcons name="shield-check" size={20} color="#3B82F6" />
+               <Text style={styles.profileBadgeText}>Verified</Text>
             </TouchableOpacity>
-          </View>
         </View>
 
-        {/* PERSONAL INFO CARD */}
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Personal info</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
-              <Text style={styles.editLink}>Edit</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.infoCard}>
-            <InfoItem icon="account-outline" label="Name" value={user.fullName} />
-            <Divider style={styles.divider} />
-            <InfoItem icon="email-outline" label="E-mail" value={user.email} />
-            <Divider style={styles.divider} />
-            <InfoItem icon="phone-outline" label="Phone number" value="+91 98765 43210" />
-            <Divider style={styles.divider} />
-            <InfoItem icon="map-marker-outline" label="Home address" value={user.location} />
-          </View>
+        {/* PROFILE HERO */}
+        <View style={styles.profileHero}>
+           <View style={styles.avatarWrapper}>
+              <Avatar.Image 
+                size={100} 
+                source={{ uri: user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200' }} 
+                style={styles.avatar}
+              />
+              <TouchableOpacity style={styles.editBtn} onPress={() => navigation.navigate('EditProfile')}>
+                 <MaterialCommunityIcons name="pencil" size={18} color="#FFFFFF" />
+              </TouchableOpacity>
+           </View>
+           <Text style={styles.userName}>{user.fullName}</Text>
+           <Text style={styles.userEmail}>{user.email}</Text>
         </View>
 
-        {/* ACCOUNT INFO CARD */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Account info</Text>
-          <View style={styles.infoCard}>
-             <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('JoinedEvents')}>
-               <View style={styles.menuItemLeft}>
-                  <View style={[styles.infoIconBox, { backgroundColor: '#F0F9FF' }]}>
-                    <MaterialCommunityIcons name="calendar-check-outline" size={22} color="#0EA5E9" />
-                  </View>
-                  <Text style={styles.menuText}>Joined Events</Text>
-               </View>
-               <MaterialCommunityIcons name="chevron-right" size={24} color="#D1D5DB" />
-             </TouchableOpacity>
-             <Divider style={styles.divider} />
-             <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MyRequests')}>
-               <View style={styles.menuItemLeft}>
-                  <View style={[styles.infoIconBox, { backgroundColor: '#FFF7ED' }]}>
-                    <MaterialCommunityIcons name="hand-heart-outline" size={22} color="#D97706" />
-                  </View>
-                  <Text style={styles.menuText}>My Requests</Text>
-               </View>
-               <MaterialCommunityIcons name="chevron-right" size={24} color="#D1D5DB" />
-             </TouchableOpacity>
-             <Divider style={styles.divider} />
-             <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('SecurityPrivacy')}>
-               <View style={styles.menuItemLeft}>
-                  <View style={[styles.infoIconBox, { backgroundColor: '#F0FDF4' }]}>
-                    <MaterialCommunityIcons name="shield-check-outline" size={22} color="#10B981" />
-                  </View>
-                  <Text style={styles.menuText}>Security & Privacy</Text>
-               </View>
-               <MaterialCommunityIcons name="chevron-right" size={24} color="#D1D5DB" />
-             </TouchableOpacity>
-          </View>
+        {/* IMPACT REPUTATION CARD */}
+        <View style={styles.sectionWrapper}>
+           <View style={styles.impactCard}>
+              <View style={styles.impactHeader}>
+                 <Text style={styles.impactTitle}>Community Reputation</Text>
+                 <View style={styles.xpBadge}>
+                    <Text style={styles.xpText}>{user.impactScore} XP</Text>
+                 </View>
+              </View>
+              <ProgressBar progress={0.6} color="#FFFFFF" style={styles.progressBar} />
+              <View style={styles.statsRow}>
+                 <View style={styles.statBox}>
+                    <Text style={styles.statNum}>{user.joinedEvents}</Text>
+                    <Text style={styles.statLab}>Events</Text>
+                 </View>
+                 <View style={styles.statDivider} />
+                 <View style={styles.statBox}>
+                    <Text style={styles.statNum}>{user.votesCast}</Text>
+                    <Text style={styles.statLab}>Highlights</Text>
+                 </View>
+                 <View style={styles.statDivider} />
+                 <View style={styles.statBox}>
+                    <Text style={styles.statNum}>${user.totalDonated}</Text>
+                    <Text style={styles.statLab}>Supported</Text>
+                 </View>
+              </View>
+           </View>
         </View>
 
-        {/* LOGOUT BUTTON */}
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-             <MaterialCommunityIcons name="logout" size={22} color="#EF4444" />
-             <Text style={styles.logoutText}>Sign Out</Text>
-          </TouchableOpacity>
-          <Text style={styles.versionText}>Version 1.2.0 (Premium)</Text>
+        {/* ACHIEVEMENTS (NON-STANDARD DISPLAY) */}
+        <View style={styles.sectionWrapper}>
+           <Text style={styles.sectionTitle}>Recognitions</Text>
+           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.badgeScroll}>
+              {ACHIEVEMENTS.map(item => (
+                <View key={item.id} style={[styles.badgeItem, { backgroundColor: item.color }]}>
+                   <MaterialCommunityIcons name={item.icon} size={28} color="#1A1C1E" />
+                   <Text style={styles.badgeTitle}>{item.title}</Text>
+                </View>
+              ))}
+           </ScrollView>
         </View>
+
+        {/* ACTION GROUPS */}
+        <View style={styles.actionSection}>
+           <Text style={styles.sectionTitle}>Engagement</Text>
+           <View style={styles.actionGrid}>
+              <TouchableOpacity style={styles.gridBtn} onPress={() => navigation.navigate('JoinedEvents')}>
+                 <View style={[styles.gridIcon, { backgroundColor: '#F0F9FF' }]}>
+                    <MaterialCommunityIcons name="calendar-check" size={24} color="#3B82F6" />
+                 </View>
+                 <Text style={styles.gridText}>My Initiatives</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.gridBtn} onPress={() => navigation.navigate('MyRequests')}>
+                 <View style={[styles.gridIcon, { backgroundColor: '#FFF1F2' }]}>
+                    <MaterialCommunityIcons name="hand-heart" size={24} color="#E11D48" />
+                 </View>
+                 <Text style={styles.gridText}>My Requests</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.gridBtn} onPress={() => navigation.navigate('SecurityPrivacy')}>
+                 <View style={[styles.gridIcon, { backgroundColor: '#F5F3FF' }]}>
+                    <MaterialCommunityIcons name="shield-lock" size={24} color="#7C3AED" />
+                 </View>
+                 <Text style={styles.gridText}>Privacy Hub</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.gridBtn}>
+                 <View style={[styles.gridIcon, { backgroundColor: '#F0FDF4' }]}>
+                    <MaterialCommunityIcons name="history" size={24} color="#10B981" />
+                 </View>
+                 <Text style={styles.gridText}>Impact Logs</Text>
+              </TouchableOpacity>
+           </View>
+        </View>
+
+        {/* RECENT ACTIVITY FEED */}
+        <View style={styles.feedSection}>
+           <Text style={styles.sectionTitle}>Recent Footprint</Text>
+           <View style={styles.feedContainer}>
+              <View style={styles.feedItem}>
+                 <View style={styles.feedLine} />
+                 <View style={styles.feedDot} />
+                 <View style={styles.feedContent}>
+                    <Text style={styles.feedTitle}>Highlighted a Medical Request</Text>
+                    <Text style={styles.feedMeta}>Today, 2:30 PM • Anna Nagar</Text>
+                 </View>
+              </View>
+              <View style={styles.feedItem}>
+                 <View style={styles.feedDot} />
+                 <View style={styles.feedContent}>
+                    <Text style={styles.feedTitle}>Joined Green City Initiative</Text>
+                    <Text style={styles.feedMeta}>Yesterday • 10:00 AM</Text>
+                 </View>
+              </View>
+           </View>
+        </View>
+
+        <Button 
+          mode="text" 
+          textColor="#EF4444" 
+          style={styles.logoutBtn}
+          labelStyle={{ fontWeight: '910', fontSize: 16 }}
+          onPress={() => api.logout()}
+        >
+          Sign Out of Hub
+        </Button>
 
       </ScrollView>
     </View>
@@ -188,163 +201,256 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  backBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: '#F8F9FA',
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingBottom: 20,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '900',
+    fontSize: 26,
+    fontWeight: '910',
     color: '#1A1C1E',
+    letterSpacing: -0.5,
   },
-  avatarSection: {
+  headerSub: {
+    fontSize: 14,
+    color: '#94A3B8',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  profileBadgePill: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 30,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+  },
+  profileBadgeText: {
+    fontSize: 12,
+    fontWeight: '910',
+    color: '#3B82F6',
+  },
+  profileHero: {
+    alignItems: 'center',
+    paddingVertical: 30,
   },
   avatarWrapper: {
     position: 'relative',
+    marginBottom: 16,
   },
-  editAvatarBtn: {
+  avatar: {
+    backgroundColor: '#F8F9FA',
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+  },
+  editBtn: {
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1A1C1E',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+  },
+  userName: {
+    fontSize: 24,
+    fontWeight: '910',
+    color: '#1A1C1E',
+    letterSpacing: -0.5,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#94A3B8',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  sectionWrapper: {
+    paddingHorizontal: 24,
+    marginBottom: 35,
+  },
+  impactCard: {
+    backgroundColor: '#1A1C1E',
+    borderRadius: 40,
+    padding: 24,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 15 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: 25,
+  },
+  impactHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  impactTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '910',
+  },
+  xpBadge: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  xpText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '910',
+  },
+  progressBar: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    marginBottom: 24,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statBox: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statNum: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '910',
+  },
+  statLab: {
+    color: '#94A3B8',
+    fontSize: 10,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    marginTop: 4,
+    letterSpacing: 1,
+  },
+  statDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '910',
+    color: '#1A1C1E',
+    marginBottom: 20,
+    letterSpacing: -0.5,
+  },
+  badgeScroll: {
+    gap: 15,
+  },
+  badgeItem: {
+    width: 130,
+    height: 130,
+    borderRadius: 35,
+    padding: 20,
+    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
-  sectionContainer: {
+  badgeTitle: {
+    fontSize: 13,
+    fontWeight: '910',
+    color: '#1A1C1E',
+    lineHeight: 18,
+  },
+  actionSection: {
     paddingHorizontal: 24,
-    marginBottom: 30,
+    marginBottom: 35,
   },
-  sectionHeaderRow: {
+  actionGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+    flexWrap: 'wrap',
+    gap: 15,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#1A1C1E',
-    marginBottom: 16,
-  },
-  editLink: {
-    color: '#1A1C1E',
-    fontWeight: '800',
-    fontSize: 14,
-  },
-  infoCard: {
+  gridBtn: {
+    width: (SCREEN_WIDTH - 63) / 2,
     backgroundColor: '#FFFFFF',
+    padding: 20,
     borderRadius: 30,
-    padding: 10,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.04,
-    shadowRadius: 20,
     borderWidth: 1,
     borderColor: '#F8F9FA',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
   },
-  infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  infoIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: '#F8F9FA',
+  gridIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 12,
   },
-  infoTextColumn: {
-    marginLeft: 16,
-  },
-  infoLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#94A3B8',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  infoValue: {
-    fontSize: 15,
-    fontWeight: '800',
+  gridText: {
+    fontSize: 14,
+    fontWeight: '900',
     color: '#1A1C1E',
   },
-  divider: {
-    backgroundColor: '#F8F9FA',
-    height: 1,
-    marginHorizontal: 16,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  menuText: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#1A1C1E',
-    marginLeft: 16,
-  },
-  footer: {
+  feedSection: {
     paddingHorizontal: 24,
-    alignItems: 'center',
+    marginBottom: 40,
+  },
+  feedContainer: {
     marginTop: 10,
   },
-  logoutBtn: {
+  feedItem: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 16,
-    paddingHorizontal: 30,
-    borderRadius: 28,
-    backgroundColor: '#FFF1F1',
-    borderWidth: 1,
-    borderColor: '#FFE4E4',
+    gap: 20,
+    marginBottom: 25,
   },
-  logoutText: {
-    color: '#EF4444',
+  feedLine: {
+    position: 'absolute',
+    left: 4,
+    top: 15,
+    bottom: -20,
+    width: 2,
+    backgroundColor: '#F1F5F9',
+  },
+  feedDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#CBD5E1',
+    marginTop: 6,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    zIndex: 10,
+  },
+  feedContent: {
+    flex: 1,
+  },
+  feedTitle: {
+    fontSize: 15,
     fontWeight: '900',
-    fontSize: 14,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+    color: '#1A1C1E',
   },
-  versionText: {
-    marginTop: 20,
+  feedMeta: {
+    fontSize: 12,
     color: '#94A3B8',
-    fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 1,
+    marginTop: 2,
+  },
+  logoutBtn: {
+    marginBottom: 30,
   }
 });

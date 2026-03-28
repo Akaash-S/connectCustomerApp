@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Image, StatusBar } from 'react-native';
-import { Text, Card, Button, useTheme, ActivityIndicator, IconButton } from 'react-native-paper';
+import { View, StyleSheet, FlatList, TouchableOpacity, Image, StatusBar, TextInput, ScrollView, ActivityIndicator } from 'react-native';
+import { Text, Badge } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { api } from '../services/api';
 
+const CATEGORIES = ['All', 'Social', 'Environment', 'Disaster', 'Medical', 'Other'];
+
 export const EventsScreen = ({ navigation }) => {
-  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  
   const [events, setEvents] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -38,26 +44,30 @@ export const EventsScreen = ({ navigation }) => {
           source={{ uri: item.image || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400' }} 
           style={styles.eventImage}
         />
+        <View style={styles.typeTag}>
+           <Text style={styles.typeText}>{item.category || 'Initiative'}</Text>
+        </View>
       </View>
       <View style={styles.cardBody}>
         <Text style={styles.eventTitle}>{item.title}</Text>
         <View style={styles.locationRow}>
           <MaterialCommunityIcons name="map-marker-outline" size={16} color="#94A3B8" />
-          <Text style={styles.locationText}>{item.location || 'Chennai'}</Text>
+          <Text style={styles.locationText}>{item.location || 'Chennai, India'}</Text>
         </View>
         <View style={styles.cardFooter}>
           <View style={styles.attendeesRow}>
-            <MaterialCommunityIcons name="account-group-outline" size={18} color="#6B7280" />
-            <Text style={styles.attendeesCount}>{item.attendeesCount || 20} Joined</Text>
+            <View style={styles.avatarStack}>
+               <AvatarGroup count={item.attendeesCount || 24} />
+            </View>
+            <Text style={styles.attendeesCount}>{item.attendeesCount || 24} Involved</Text>
           </View>
-          <Button 
-            mode="contained" 
+          <TouchableOpacity 
             style={styles.joinBtn}
-            labelStyle={styles.joinBtnLabel}
             onPress={() => navigation.navigate('EventDetails', { eventId: item.id })}
           >
-            Join
-          </Button>
+            <Text style={styles.joinBtnText}>Join Initative</Text>
+            <MaterialCommunityIcons name="chevron-right" size={16} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
@@ -66,33 +76,83 @@ export const EventsScreen = ({ navigation }) => {
   return (
     <View style={styles.mainContainer}>
       <StatusBar barStyle="dark-content" />
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Impact Events</Text>
-        <Text style={styles.headerSub}>Make a difference together</Text>
-      </View>
-
-      {isLoading ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator color="#1A1C1E" />
-        </View>
-      ) : (
-        <FlatList
-          data={events}
-          renderItem={renderEventItem}
-          keyExtractor={item => item.id}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="calendar-blank-outline" size={60} color="#F1F5F9" />
-              <Text style={styles.emptyText}>No Data</Text>
+      
+      <FlatList
+        data={events}
+        renderItem={renderEventItem}
+        keyExtractor={item => item.id}
+        contentContainerStyle={[styles.listContent, { paddingTop: insets.top }]}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <>
+            {/* INTEGRATED SINGLE-LAYER HEADER */}
+            <View style={styles.header}>
+              <View>
+                <Text style={styles.headerTitle}>Impact Hub</Text>
+                <Text style={styles.headerSub}>Community initiatives & events</Text>
+              </View>
+              <TouchableOpacity style={styles.notifIconPill}>
+                <MaterialCommunityIcons name="bell-outline" size={24} color="#1A1C1E" />
+                <Badge size={8} style={styles.notifBadge} />
+              </TouchableOpacity>
             </View>
-          }
-        />
-      )}
+
+            {/* SEARCH BAR */}
+            <View style={styles.searchContainer}>
+              <View style={styles.searchBox}>
+                <MaterialCommunityIcons name="magnify" size={24} color="#94A3B8" />
+                <TextInput 
+                  placeholder="Search events or locations..." 
+                  style={styles.searchInput}
+                  placeholderTextColor="#94A3B8"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                />
+              </View>
+            </View>
+
+            {/* CATEGORY CHIPS */}
+            <View style={styles.categoryWrapper}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+                {CATEGORIES.map(cat => (
+                  <TouchableOpacity 
+                    key={cat} 
+                    style={[styles.categoryChip, activeCategory === cat && styles.activeChip]}
+                    onPress={() => setActiveCategory(cat)}
+                  >
+                    <Text style={[styles.chipText, activeCategory === cat && styles.activeChipText]}>{cat}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </>
+        }
+        ListEmptyComponent={
+          isLoading ? (
+            <View style={styles.loader}>
+              <ActivityIndicator color="#1A1C1E" size="large" />
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <MaterialCommunityIcons name="calendar-remove-outline" size={60} color="#F1F5F9" />
+              <Text style={styles.emptyText}>No Upcoming Events</Text>
+            </View>
+          )
+        }
+      />
     </View>
   );
 };
+
+const AvatarGroup = ({ count }) => (
+  <View style={{ flexDirection: 'row' }}>
+     {[1, 2, 3].map(i => (
+       <View key={i} style={[styles.miniAvatar, { marginLeft: i === 1 ? 0 : -10, zIndex: 10 - i }]}>
+          <Image source={{ uri: `https://i.pravatar.cc/100?u=${i}` }} style={styles.miniAvatarImg} />
+       </View>
+     ))}
+  </View>
+);
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -100,46 +160,117 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   header: {
-    paddingTop: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 24,
-    marginBottom: 20,
+    paddingBottom: 25,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '900',
+    fontSize: 26,
+    fontWeight: '910',
     color: '#1A1C1E',
+    letterSpacing: -0.5,
   },
   headerSub: {
     fontSize: 14,
     color: '#94A3B8',
-    marginTop: 4,
-    fontWeight: '500',
+    fontWeight: '600',
+    marginTop: 2,
   },
-  loaderContainer: {
-    flex: 1,
+  notifIconPill: {
+    width: 48,
+    height: 48,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    backgroundColor: '#EF4444',
   },
   listContent: {
+    paddingBottom: 100,
+  },
+  searchContainer: {
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    marginBottom: 20,
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    height: 60,
+    borderRadius: 28,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1C1E',
+  },
+  categoryWrapper: {
+    marginBottom: 25,
+  },
+  categoryScroll: {
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  categoryChip: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  activeChip: {
+    backgroundColor: '#1A1C1E',
+    borderColor: '#1A1C1E',
+  },
+  chipText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#64748B',
+  },
+  activeChipText: {
+    color: '#FFFFFF',
+  },
+  loader: {
+    marginTop: 100,
+    alignItems: 'center',
   },
   eventCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 35,
-    marginBottom: 24,
     overflow: 'hidden',
+    marginBottom: 20,
+    marginHorizontal: 24,
     borderWidth: 1,
     borderColor: '#F8F9FA',
-    elevation: 4,
+    elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.04,
-    shadowRadius: 15,
+    shadowRadius: 20,
   },
   cardHeader: {
-    position: 'relative',
     height: 180,
+    position: 'relative',
   },
   eventImage: {
     width: '100%',
@@ -149,82 +280,117 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 15,
     left: 15,
-    zIndex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.95)',
     borderRadius: 18,
     width: 60,
     height: 65,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
+    zIndex: 10,
+    elevation: 5,
   },
   dateDay: {
-    fontSize: 22,
-    fontWeight: '900',
+    fontSize: 20,
+    fontWeight: '910',
     color: '#1A1C1E',
   },
   dateMonth: {
     fontSize: 10,
-    fontWeight: '800',
-    color: '#B91C1C',
+    fontWeight: '900',
+    color: '#3B82F6',
+    marginTop: 2,
+  },
+  typeTag: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    backgroundColor: 'rgba(26,28,30,0.8)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    zIndex: 10,
+  },
+  typeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '900',
     textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   cardBody: {
     padding: 24,
   },
   eventTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: '910',
     color: '#1A1C1E',
-    marginBottom: 8,
+    letterSpacing: -0.5,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    marginTop: 8,
     marginBottom: 20,
   },
   locationText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#94A3B8',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingTop: 18,
+    borderTopWidth: 1,
+    borderTopColor: '#F8F9FA',
   },
   attendeesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
+  },
+  miniAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    overflow: 'hidden',
+    backgroundColor: '#F8F9FA',
+  },
+  miniAvatarImg: {
+    width: '100%',
+    height: '100%',
   },
   attendeesCount: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#64748B',
   },
   joinBtn: {
-    borderRadius: 18,
     backgroundColor: '#1A1C1E',
-    paddingHorizontal: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
-  joinBtnLabel: {
-    fontSize: 14,
+  joinBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
   emptyContainer: {
     alignItems: 'center',
-    marginTop: 100,
+    paddingVertical: 100,
   },
   emptyText: {
     marginTop: 20,
-    color: '#94A3B8',
-    fontWeight: '600',
+    color: '#CBD5E1',
+    fontWeight: '800',
+    fontSize: 16,
   }
 });

@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
-import { Text, Searchbar, Card, Avatar, IconButton, useTheme, ActivityIndicator } from 'react-native-paper';
+import { View, StyleSheet, FlatList, TouchableOpacity, ScrollView, StatusBar, TextInput, ActivityIndicator } from 'react-native';
+import { Text, Avatar, IconButton, useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { api } from '../services/api';
 
+const CATEGORIES = ['All', 'Medical', 'Food', 'Education', 'Environment', 'Animal Welfare'];
+
 export const NGOsScreen = ({ navigation }) => {
-  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
   const [ngos, setNgos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -26,28 +31,35 @@ export const NGOsScreen = ({ navigation }) => {
 
   const renderNGOItem = ({ item }) => (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.9}
       onPress={() => navigation.navigate('NGODetails', { ngoId: item.id })}
       style={styles.ngoCard}
     >
       <View style={styles.cardHeader}>
-        <Avatar.Text 
-          size={56} 
-          label={item.initials || item.name.substring(0, 2).toUpperCase()} 
-          style={{ backgroundColor: item.color || '#10B981' }} 
-        />
+        <View style={styles.avatarCircle}>
+           <Text style={styles.avatarText}>{item.initials || item.name.substring(0, 1).toUpperCase()}</Text>
+        </View>
         <View style={styles.ngoInfo}>
           <Text style={styles.ngoName}>{item.name}</Text>
-          <Text style={styles.ngoLocation}>📍 {item.location || 'Chennai, India'}</Text>
+          <View style={styles.locationRow}>
+             <MaterialCommunityIcons name="map-marker-outline" size={14} color="#94A3B8" />
+             <Text style={styles.ngoLocation}>{item.location || 'Chennai, India'}</Text>
+          </View>
         </View>
-        <IconButton icon="chevron-right" size={24} iconColor="#D1D5DB" />
+        <View style={styles.verifyBadge}>
+           <MaterialCommunityIcons name="check-decagram" size={24} color="#3B82F6" />
+        </View>
       </View>
-      <View style={styles.impactRow}>
-        <View style={styles.impactBadge}>
-           <MaterialCommunityIcons name="star" size={12} color="#D97706" />
-           <Text style={styles.impactText}>{item.impact || 'Verified'}</Text>
+      
+      <View style={styles.cardFooter}>
+        <View style={styles.statPill}>
+          <MaterialCommunityIcons name="heart-multiple-outline" size={16} color="#64748B" />
+          <Text style={styles.statText}>{item.volunteersCount || '15'} Initiatives</Text>
         </View>
-        <Text style={styles.volunteersCount}>{item.volunteersCount || '12'} Active Volunteers</Text>
+        <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('NGODetails', { ngoId: item.id })}>
+           <Text style={styles.actionBtnText}>Explore Partner</Text>
+           <MaterialCommunityIcons name="arrow-right" size={16} color="#1A1C1E" />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
@@ -55,41 +67,69 @@ export const NGOsScreen = ({ navigation }) => {
   return (
     <View style={styles.mainContainer}>
       <StatusBar barStyle="dark-content" />
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Find NGOs</Text>
-        <Text style={styles.headerSub}>Support organizations near you</Text>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <Searchbar
-          placeholder="Search by name or category..."
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-          style={styles.searchBar}
-          iconColor="#94A3B8"
-          inputStyle={styles.searchInput}
-        />
-      </View>
-
-      {isLoading ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator color="#1A1C1E" />
-        </View>
-      ) : (
-        <FlatList
-          data={ngos.filter(n => n.name.toLowerCase().includes(searchQuery.toLowerCase()))}
-          renderItem={renderNGOItem}
-          keyExtractor={item => item.id}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="database-off-outline" size={60} color="#F1F5F9" />
-              <Text style={styles.emptyText}>No Data</Text>
+      
+      <FlatList
+        data={ngos}
+        renderItem={renderNGOItem}
+        keyExtractor={item => item.id}
+        contentContainerStyle={[styles.listContent, { paddingTop: insets.top }]}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <>
+            {/* INTEGRATED SINGLE-LAYER HEADER */}
+            <View style={styles.header}>
+              <View>
+                <Text style={styles.headerTitle}>Partner Hub</Text>
+                <Text style={styles.headerSub}>Empowering community heroes</Text>
+              </View>
+              <TouchableOpacity style={styles.notifIconPill}>
+                <MaterialCommunityIcons name="bell-outline" size={24} color="#1A1C1E" />
+              </TouchableOpacity>
             </View>
-          }
-        />
-      )}
+
+            {/* SEARCH BAR */}
+            <View style={styles.searchContainer}>
+              <View style={styles.searchBox}>
+                <MaterialCommunityIcons name="magnify" size={24} color="#94A3B8" />
+                <TextInput 
+                  placeholder="Search by name or category..." 
+                  style={styles.searchInput}
+                  placeholderTextColor="#94A3B8"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                />
+              </View>
+            </View>
+
+            {/* CATEGORY CHIPS */}
+            <View style={styles.categoryWrapper}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+                {CATEGORIES.map(cat => (
+                  <TouchableOpacity 
+                    key={cat} 
+                    style={[styles.categoryChip, activeCategory === cat && styles.activeChip]}
+                    onPress={() => setActiveCategory(cat)}
+                  >
+                    <Text style={[styles.chipText, activeCategory === cat && styles.activeChipText]}>{cat}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </>
+        }
+        ListEmptyComponent={
+          isLoading ? (
+            <View style={styles.loader}>
+              <ActivityIndicator color="#1A1C1E" size="large" />
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <MaterialCommunityIcons name="office-building-off-outline" size={60} color="#F1F5F9" />
+              <Text style={styles.emptyText}>No Partners Found</Text>
+            </View>
+          )
+        }
+      />
     </View>
   );
 };
@@ -100,113 +140,190 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   header: {
-    paddingTop: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 24,
-    marginBottom: 20,
+    paddingBottom: 25,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '900',
+    fontSize: 26,
+    fontWeight: '910',
     color: '#1A1C1E',
+    letterSpacing: -0.5,
   },
   headerSub: {
     fontSize: 14,
     color: '#94A3B8',
-    marginTop: 4,
-    fontWeight: '500',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  notifIconPill: {
+    width: 48,
+    height: 48,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+  },
+  listContent: {
+    paddingBottom: 100,
   },
   searchContainer: {
     paddingHorizontal: 24,
-    marginBottom: 24,
+    marginBottom: 20,
   },
-  searchBar: {
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#F8F9FA',
-    borderRadius: 18,
-    elevation: 0,
+    height: 60,
+    borderRadius: 28,
+    paddingHorizontal: 20,
     borderWidth: 1,
     borderColor: '#F1F5F9',
-    height: 52,
   },
   searchInput: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  loaderContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginLeft: 12,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1C1E',
   },
-  listContent: {
+  categoryWrapper: {
+    marginBottom: 25,
+  },
+  categoryScroll: {
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    gap: 12,
+  },
+  categoryChip: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  activeChip: {
+    backgroundColor: '#1A1C1E',
+    borderColor: '#1A1C1E',
+  },
+  chipText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#64748B',
+  },
+  activeChipText: {
+    color: '#FFFFFF',
+  },
+  loader: {
+    marginTop: 100,
+    alignItems: 'center',
   },
   ngoCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 32,
-    padding: 20,
-    marginBottom: 16,
+    borderRadius: 35,
+    padding: 24,
+    marginHorizontal: 24,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: '#F8F9FA',
-    elevation: 4,
+    elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.04,
-    shadowRadius: 15,
+    shadowRadius: 20,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 20,
+  },
+  avatarCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: '#1A1C1E',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '900',
   },
   ngoInfo: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: 18,
   },
   ngoName: {
-    fontSize: 18,
-    fontWeight: '900',
+    fontSize: 20,
+    fontWeight: '910',
     color: '#1A1C1E',
+    letterSpacing: -0.5,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
   },
   ngoLocation: {
     fontSize: 13,
     color: '#94A3B8',
-    marginTop: 2,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  impactRow: {
+  verifyBadge: {
+    marginLeft: 10,
+  },
+  cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 20,
-    paddingTop: 15,
+    paddingTop: 18,
     borderTopWidth: 1,
     borderTopColor: '#F8F9FA',
   },
-  impactBadge: {
+  statPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF7ED',
+    backgroundColor: '#F8F9FA',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 10,
+    borderRadius: 12,
+    gap: 8,
+  },
+  statText: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#64748B',
+  },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
   },
-  impactText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#D97706',
-  },
-  volunteersCount: {
-    fontSize: 12,
-    color: '#94A3B8',
-    fontWeight: '700',
+  actionBtnText: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#1A1C1E',
   },
   emptyContainer: {
     alignItems: 'center',
-    marginTop: 100,
+    paddingVertical: 100,
   },
   emptyText: {
     marginTop: 20,
-    color: '#94A3B8',
-    fontWeight: '600',
+    color: '#CBD5E1',
+    fontWeight: '800',
+    fontSize: 16,
   }
 });

@@ -1,84 +1,211 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { Text, useTheme, Surface, Chip } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, StatusBar, TextInput, ScrollView } from 'react-native';
+import { Text } from 'react-native-paper';
 import { ProfileSubScreenWrapper } from '../../components/ProfileSubScreenWrapper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { api } from '../../services/api';
 
-const RequestsData = [
-  { id: '1', title: 'Tree Plantation Volunteers Needed', location: 'Chennai', date: '22 March', status: 'Pending', type: 'Environment' },
-  { id: '2', title: 'Beach Cleanup Drive', location: 'Marina Beach', date: '25 March', status: 'Volunteer Assigned', type: 'Environment' },
-  { id: '3', title: 'Old Age Home Support', location: 'Adyar', date: '28 March', status: 'In Progress', type: 'Social' },
-  { id: '4', title: 'Park Restoration', location: 'Velachery', date: '10 March', status: 'Completed', type: 'Environment' },
-];
+const CATEGORIES = ['All', 'Medical', 'Food', 'Disaster', 'Education', 'Other'];
 
-const RequestCard = ({ item, navigation }) => {
+export const MyRequestsScreen = ({ navigation }) => {
+  const [requests, setRequests] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMyRequests = async () => {
+      try {
+        const data = await api.getMyRequests();
+        setRequests(data);
+      } catch (error) {
+        console.error("Error fetching my requests:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchMyRequests();
+  }, []);
+
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Pending': return '#F59E0B';
-      case 'Volunteer Assigned': return '#3B82F6';
-      case 'In Progress': return '#8B5CF6';
-      case 'Completed': return '#10B981';
-      default: return '#6B7280';
+      case 'PENDING': return '#F59E0B';
+      case 'ASSIGNED': return '#3B82F6';
+      case 'COMPLETED': return '#10B981';
+      case 'URGENT': return '#EF4444';
+      default: return '#94A3B8';
     }
   };
 
-  return (
+  const filteredRequests = requests.filter(r => {
+    const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase());
+    if (activeCategory === 'All') return matchesSearch;
+    return matchesSearch && r.category === activeCategory;
+  });
+
+  const renderRequestItem = ({ item }) => (
     <TouchableOpacity 
-      activeOpacity={1}
+      activeOpacity={0.9}
       onPress={() => navigation.navigate('RequestDetails', { requestId: item.id })}
+      style={styles.card}
     >
-      <Surface style={styles.card} elevation={2}>
-        <View style={styles.cardHeader}>
-          <Chip icon="leaf" style={styles.typeChip} textStyle={styles.typeChipText}>{item.type}</Chip>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
-            <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>{item.status}</Text>
-          </View>
+      <View style={styles.cardHeader}>
+        <View style={styles.categoryBadge}>
+           <Text style={styles.categoryText}>{item.category || 'Help'}</Text>
         </View>
-        
-        <Text variant="titleMedium" style={styles.title}>{item.title}</Text>
-        
-        <View style={styles.footer}>
-          <View style={styles.footerItem}>
-            <MaterialCommunityIcons name="map-marker-outline" size={16} color="#6B7280" />
-            <Text style={styles.footerText}>{item.location}</Text>
-          </View>
-          <View style={styles.footerItem}>
-            <MaterialCommunityIcons name="calendar-outline" size={16} color="#6B7280" />
-            <Text style={styles.footerText}>{item.date}</Text>
-          </View>
+        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
+          <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
+          <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>{item.status || 'ACTIVE'}</Text>
         </View>
-      </Surface>
+      </View>
+      
+      <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
+      
+      <View style={styles.cardFooter}>
+        <View style={styles.metaRow}>
+          <MaterialCommunityIcons name="map-marker-outline" size={16} color="#94A3B8" />
+          <Text style={styles.metaText}>{item.location || 'Chennai'}</Text>
+        </View>
+        <View style={styles.metaRow}>
+          <MaterialCommunityIcons name="clock-outline" size={16} color="#94A3B8" />
+          <Text style={styles.metaText}>{new Date(item.createdAt || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</Text>
+        </View>
+      </View>
     </TouchableOpacity>
   );
-};
 
-export const MyRequestsScreen = ({ navigation }) => {
   return (
-    <ProfileSubScreenWrapper title="My Requests" navigation={navigation}>
-      <View style={styles.container}>
-        {RequestsData.map(item => (
-          <RequestCard key={item.id} item={item} navigation={navigation} />
-        ))}
-      </View>
-    </ProfileSubScreenWrapper>
+    <View style={styles.mainContainer}>
+       <ProfileSubScreenWrapper 
+          title="My Requests" 
+          subtitle="Support requests you created" 
+          navigation={navigation}
+        >
+          {/* SEARCH BAR (HUB CONSISTENT) */}
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBox}>
+              <MaterialCommunityIcons name="magnify" size={24} color="#94A3B8" />
+              <TextInput 
+                placeholder="Search your requests..." 
+                style={styles.searchInput}
+                placeholderTextColor="#94A3B8"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+            </View>
+          </View>
+
+          {/* CATEGORY CHIPS */}
+          <View style={styles.categoryContainer}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+              {CATEGORIES.map(cat => (
+                <TouchableOpacity 
+                  key={cat} 
+                  style={[styles.categoryChip, activeCategory === cat && styles.activeChip]}
+                  onPress={() => setActiveCategory(cat)}
+                >
+                  <Text style={[styles.chipText, activeCategory === cat && styles.activeChipText]}>{cat}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {isLoading ? (
+            <View style={styles.loader}>
+              <ActivityIndicator color="#1A1C1E" />
+            </View>
+          ) : (
+            <FlatList
+              data={filteredRequests}
+              renderItem={renderRequestItem}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={false}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <MaterialCommunityIcons name="database-off-outline" size={60} color="#F1F5F9" />
+                  <Text style={styles.emptyText}>No Data</Text>
+                </View>
+              }
+            />
+          )}
+        </ProfileSubScreenWrapper>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    gap: 16,
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  searchContainer: {
+    marginBottom: 20,
+    marginTop: 10,
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 28,
+    paddingHorizontal: 20,
+    height: 56,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1A1C1E',
+  },
+  categoryContainer: {
+    marginBottom: 25,
+  },
+  categoryScroll: {
+    gap: 10,
+  },
+  categoryChip: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  activeChip: {
+    backgroundColor: '#1A1C1E',
+    borderColor: '#1A1C1E',
+  },
+  chipText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#94A3B8',
+  },
+  activeChipText: {
+    color: '#FFFFFF',
+  },
+  loader: {
+    padding: 100,
+    alignItems: 'center',
+  },
+  listContent: {
+    paddingBottom: 40,
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 30,
+    borderRadius: 35,
     padding: 24,
+    marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
+    borderColor: '#F8F9FA',
     elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.04,
+    shadowRadius: 15,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -86,45 +213,72 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  typeChip: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    height: 28,
+  categoryBadge: {
+    backgroundColor: '#F8F9FA',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
-  typeChipText: {
+  categoryText: {
     fontSize: 10,
     fontWeight: '900',
-    color: '#10B981',
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '900',
-    textTransform: 'uppercase',
-  },
-  title: {
-    fontWeight: '800',
-    color: '#1A1C1E',
-    marginBottom: 15,
-  },
-  footer: {
-    flexDirection: 'row',
-    gap: 15,
-    borderTopWidth: 1,
-    borderTopColor: '#F9FAFB',
-    paddingTop: 15,
-  },
-  footerItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    gap: 6,
   },
-  footerText: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '600',
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#1A1C1E',
+    marginBottom: 20,
+    lineHeight: 24,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    gap: 20,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#F8F9FA',
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  metaText: {
+    fontSize: 13,
+    color: '#1A1C1E',
+    fontWeight: '700',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    marginTop: 40,
+  },
+  emptyText: {
+    marginTop: 20,
+    color: '#94A3B8',
+    fontWeight: '800',
+    fontSize: 16,
   }
 });
