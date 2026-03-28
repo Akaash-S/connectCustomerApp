@@ -51,10 +51,14 @@ export const RequestHelpScreen = ({ navigation }) => {
   const formValues = watch();
 
   const transitionTo = (step) => {
-    Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
-      setCurrentStep(step);
-      Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
-    });
+    // Instant step change to avoid skeleton UI, followed by a quick fade-in
+    fadeAnim.setValue(0);
+    setCurrentStep(step);
+    Animated.timing(fadeAnim, { 
+      toValue: 1, 
+      duration: 250, 
+      useNativeDriver: true 
+    }).start();
   };
 
   const nextStep = () => {
@@ -84,16 +88,16 @@ export const RequestHelpScreen = ({ navigation }) => {
   };
 
   const MeshBackground = () => (
-    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFF9F0' }]}>
-      <View style={[styles.blob, { top: -100, left: -50, backgroundColor: 'rgba(217, 119, 6, 0.15)', width: 300, height: 300 }]} />
-      <View style={[styles.blob, { bottom: -50, right: -50, backgroundColor: 'rgba(16, 185, 129, 0.15)', width: 400, height: 400 }]} />
-      <View style={[styles.blob, { top: SCREEN_HEIGHT * 0.4, right: -100, backgroundColor: 'rgba(59, 130, 246, 0.1)', width: 250, height: 250 }]} />
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFFFFF' }]}>
+      <View style={[styles.blob, { top: -200, left: -100, backgroundColor: 'rgba(217, 119, 6, 0.2)', width: 600, height: 600 }]} />
+      <View style={[styles.blob, { bottom: -100, right: -150, backgroundColor: 'rgba(16, 185, 129, 0.15)', width: 700, height: 700 }]} />
+      <View style={[styles.blob, { top: SCREEN_HEIGHT * 0.3, right: -100, backgroundColor: 'rgba(59, 130, 246, 0.1)', width: 400, height: 400 }]} />
     </View>
   );
 
   const GlassCard = ({ title, subtitle, children, onAction, actionLabel }) => (
     <View style={styles.glassContainer}>
-      <BlurView intensity={40} tint="light" style={styles.glassCard}>
+      <View style={styles.glassCard}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>{title}</Text>
           {subtitle && <Text style={styles.cardSubtitle}>{subtitle}</Text>}
@@ -113,11 +117,12 @@ export const RequestHelpScreen = ({ navigation }) => {
             onPress={onAction} 
             style={styles.actionBtn} 
             contentStyle={styles.actionBtnContent}
+            activeOpacity={1}
           >
             {actionLabel}
           </Button>
         </View>
-      </BlurView>
+      </View>
     </View>
   );
 
@@ -175,7 +180,8 @@ export const RequestHelpScreen = ({ navigation }) => {
         {CATEGORIES.map(cat => (
           <TouchableOpacity 
             key={cat.id} 
-            style={[styles.glassPill, selectedCategory === cat.id && { backgroundColor: PRIMARY_COLOR }]}
+            activeOpacity={1}
+            style={[styles.glassPill, selectedCategory === cat.id && { backgroundColor: PRIMARY_COLOR, borderColor: PRIMARY_COLOR }]}
             onPress={() => setSelectedCategory(cat.id)}
           >
             <MaterialCommunityIcons name={cat.icon} size={20} color={selectedCategory === cat.id ? '#FFF' : cat.color} />
@@ -257,7 +263,8 @@ export const RequestHelpScreen = ({ navigation }) => {
         {SKILLS.map(skill => (
           <TouchableOpacity 
             key={skill} 
-            style={[styles.smallPill, selectedSkills.includes(skill) && { backgroundColor: '#4B5563' }]}
+            activeOpacity={1}
+            style={[styles.smallPill, selectedSkills.includes(skill) && { backgroundColor: '#1A1C1E', borderColor: '#1A1C1E' }]}
             onPress={() => toggleSkill(skill)}
           >
             <Text style={[styles.smallPillLabel, selectedSkills.includes(skill) && { color: '#FFF' }]}>{skill}</Text>
@@ -296,7 +303,7 @@ export const RequestHelpScreen = ({ navigation }) => {
           showsHorizontalScrollIndicator={false}
           data={[{ id: 'add' }, ...media]}
           renderItem={({ item }) => item.id === 'add' ? (
-            <TouchableOpacity style={styles.addPhotoGlass} onPress={addPhoto}>
+            <TouchableOpacity style={styles.addPhotoGlass} onPress={addPhoto} activeOpacity={1}>
               <MaterialCommunityIcons name="camera-plus" size={28} color={PRIMARY_COLOR} />
             </TouchableOpacity>
           ) : (
@@ -377,28 +384,32 @@ const styles = StyleSheet.create({
   progressBar: { height: 4, borderRadius: 2, marginHorizontal: 20, marginTop: 5 },
   main: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   glassContainer: { width: SCREEN_WIDTH * 0.9, height: SCREEN_HEIGHT * 0.65, alignItems: 'center' },
-  glassCard: { width: '100%', height: '100%', borderRadius: 32, padding: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)', overflow: 'hidden' },
+  glassCard: { 
+    width: '100%', height: '100%', borderRadius: 36, padding: 24, 
+    backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 25 }, shadowOpacity: 0.12, shadowRadius: 40, elevation: 12 
+  },
   cardHeader: { marginBottom: 15 },
-  cardTitle: { fontSize: 24, fontWeight: '900', color: '#1A1C1E' },
-  cardSubtitle: { fontSize: 13, fontWeight: 'bold', color: '#6B7280', textTransform: 'uppercase', marginTop: 4 },
+  cardTitle: { fontSize: 26, fontWeight: '900', color: '#1A1C1E' },
+  cardSubtitle: { fontSize: 13, fontWeight: '800', color: '#6B7280', textTransform: 'uppercase', marginTop: 4, letterSpacing: 1 },
   cardScroll: { flex: 1, width: '100%' },
   cardContent: { paddingBottom: 20 },
   cardFooter: { marginTop: 15, width: '100%' },
   fieldLabel: { fontSize: 11, fontWeight: '900', color: '#6B7280', textTransform: 'uppercase', marginBottom: 8, letterSpacing: 1 },
-  glassInput: { backgroundColor: 'rgba(255,255,255,0.4)', marginBottom: 5 },
+  glassInput: { backgroundColor: '#F8FAFC', marginBottom: 5 },
   segmented: { marginBottom: 15 },
-  charCount: { alignSelf: 'flex-end', fontSize: 10, color: '#6B7280' },
+  charCount: { alignSelf: 'flex-end', fontSize: 10, color: '#6B7280', fontWeight: '600' },
   pillContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  glassPill: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.8)', borderWidth: 1, borderColor: 'rgba(0,0,0,0.05)' },
+  glassPill: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 24, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
   pillLabel: { marginLeft: 8, fontWeight: '900', color: '#4B5563', fontSize: 14 },
   row: { flexDirection: 'row', gap: 12 },
   stepperRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   stepperLabel: { fontSize: 16, fontWeight: '900', color: '#1A1C1E' },
   stepperActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   stepperValue: { fontSize: 22, fontWeight: '900', color: PRIMARY_COLOR },
-  smallPill: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.8)' },
-  smallPillLabel: { fontSize: 12, fontWeight: '700', color: '#4B5563' },
-  addPhotoGlass: { width: 80, height: 80, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.6)', borderStyle: 'dashed', borderWidth: 2, borderColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center', marginRight: 15 },
+  smallPill: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
+  smallPillLabel: { fontSize: 13, fontWeight: '800', color: '#4B5563' },
+  addPhotoGlass: { width: 80, height: 80, borderRadius: 24, backgroundColor: '#F8FAFC', borderStyle: 'dashed', borderWidth: 2, borderColor: '#CBD5E1', justifyContent: 'center', alignItems: 'center', marginRight: 15 },
   mediaFrame: { width: 80, height: 80, borderRadius: 24, marginRight: 15 },
   radioBlock: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   previewTitle: { fontSize: 26, fontWeight: '900', color: '#1A1C1E' },

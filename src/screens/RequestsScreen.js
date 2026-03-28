@@ -47,9 +47,10 @@ const ACTIVITY_HISTORY = [
 ];
 
 const MeshBackground = () => (
-  <View style={[StyleSheet.absoluteFill, { backgroundColor: '#F5F7FF' }]}>
-    <View style={[styles.blob, { top: -100, right: -50, backgroundColor: 'rgba(99, 102, 241, 0.08)', width: 400, height: 400 }]} />
-    <View style={[styles.blob, { bottom: 100, left: -100, backgroundColor: 'rgba(16, 185, 129, 0.05)', width: 350, height: 350 }]} />
+  <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFFFFF' }]}>
+    <View style={[styles.blob, { top: -150, right: -100, backgroundColor: 'rgba(99, 102, 241, 0.15)', width: 500, height: 500 }]} />
+    <View style={[styles.blob, { bottom: 50, left: -150, backgroundColor: 'rgba(16, 185, 129, 0.1)', width: 600, height: 600 }]} />
+    <View style={[styles.blob, { top: '40%', right: -50, backgroundColor: 'rgba(217, 119, 6, 0.08)', width: 300, height: 300 }]} />
   </View>
 );
 
@@ -215,10 +216,10 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.1,
+    shadowRadius: 24,
+    elevation: 8,
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
@@ -339,10 +340,10 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.06,
-    shadowRadius: 20,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
+    elevation: 6,
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
@@ -382,10 +383,10 @@ const styles = StyleSheet.create({
     padding: 28,
     marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 15 },
-    shadowOpacity: 0.04,
-    shadowRadius: 24,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.1,
+    shadowRadius: 30,
+    elevation: 8,
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
@@ -412,7 +413,7 @@ const styles = StyleSheet.create({
   nodeLine: {
     width: 2,
     flex: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#F1F5F9',
     marginVertical: 4,
   },
   nodeRight: {
