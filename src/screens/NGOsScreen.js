@@ -82,8 +82,13 @@ export const NGOsScreen = ({ navigation }) => {
                 <Text style={styles.headerTitle}>Partner Hub</Text>
                 <Text style={styles.headerSub}>Empowering community heroes</Text>
               </View>
-              <TouchableOpacity style={styles.notifIconPill}>
+              <TouchableOpacity 
+                 style={styles.notifIconPill} 
+                 onPress={() => navigation.navigate('Notifications')}
+                 activeOpacity={0.7}
+              >
                 <MaterialCommunityIcons name="bell-outline" size={24} color="#1A1C1E" />
+                <View style={styles.activeDot} />
               </TouchableOpacity>
             </View>
 
@@ -176,6 +181,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 5,
+  },
+  activeDot: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
   listContent: {
     paddingBottom: 100,

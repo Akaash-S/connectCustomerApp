@@ -105,18 +105,20 @@ export const NotificationsScreen = ({ navigation }) => {
 
   const CustomHeader = () => (
     <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-       <View style={styles.headerTop}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-             <MaterialCommunityIcons name="arrow-left" size={24} color="#1A1C1E" />
-          </TouchableOpacity>
-          <View>
-             <Text style={styles.headerTitle}>Activity</Text>
-             <Text style={styles.headerSub}>Community pulses</Text>
-          </View>
-          <View style={{ width: 44 }} />
-       </View>
-       
-       <View style={styles.actionHub}>
+        <View style={styles.headerTop}>
+           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+              <MaterialCommunityIcons name="chevron-left" size={32} color="#1A1C1E" />
+           </TouchableOpacity>
+           
+           <View style={styles.titleContainer}>
+              <Text style={styles.headerTitle}>Activity</Text>
+              <Text style={styles.headerSub}>Community pulses</Text>
+           </View>
+
+           <View style={styles.headerSpacer} />
+        </View>
+        
+        <View style={styles.actionHub}>
           <TouchableOpacity onPress={markAllRead} style={styles.actionBtn}>
              <MaterialCommunityIcons name="check-all" size={16} color="#3B82F6" />
              <Text style={styles.actionText}>Read All</Text>
@@ -189,11 +191,23 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 18,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderWidth: 1.5,
+    borderColor: '#F8F9FA',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+  },
+  titleContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerSpacer: {
+    width: 44,
   },
   headerTitle: {
     fontSize: 24,

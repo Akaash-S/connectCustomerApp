@@ -63,7 +63,7 @@ export const ReportDetailsScreen = ({ route, navigation }) => {
       {/* MONOLITHIC HUB HEADER */}
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={PRIMARY_DARK} />
+            <MaterialCommunityIcons name="chevron-left" size={32} color={PRIMARY_DARK} />
          </TouchableOpacity>
          <View style={styles.headerTitleGroup}>
             <Text style={styles.headerTitle}>Performance Hub</Text>

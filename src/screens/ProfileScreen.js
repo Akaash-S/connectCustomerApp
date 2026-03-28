@@ -81,10 +81,20 @@ export const ProfileScreen = ({ navigation }) => {
               <Text style={styles.headerTitle}>My Hub</Text>
               <Text style={styles.headerSub}>Community footprint</Text>
             </View>
-            <TouchableOpacity style={styles.profileBadgePill}>
-               <MaterialCommunityIcons name="shield-check" size={20} color="#3B82F6" />
-               <Text style={styles.profileBadgeText}>{user.isVerified ? 'Verified' : 'Member'}</Text>
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+               <TouchableOpacity 
+                  style={styles.notifIconPill} 
+                  onPress={() => navigation.navigate('Notifications')}
+                  activeOpacity={0.7}
+               >
+                  <MaterialCommunityIcons name="bell-outline" size={24} color="#1A1C1E" />
+                  <View style={styles.activeDot} />
+               </TouchableOpacity>
+               <TouchableOpacity style={styles.profileBadgePill}>
+                  <MaterialCommunityIcons name="shield-check" size={20} color="#3B82F6" />
+                  <Text style={styles.profileBadgeText}>{user.isVerified ? 'Verified' : 'Member'}</Text>
+               </TouchableOpacity>
+            </View>
         </View>
 
         {isLoading ? (
@@ -240,6 +250,37 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontWeight: '600',
     marginTop: 2,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  notifIconPill: {
+    width: 44,
+    height: 44,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+  },
+  activeDot: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
   profileBadgePill: {
     flexDirection: 'row',

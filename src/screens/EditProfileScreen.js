@@ -66,7 +66,7 @@ export const EditProfileScreen = ({ navigation }) => {
   const CustomHeader = () => (
     <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#1A1C1E" />
+          <MaterialCommunityIcons name="chevron-left" size={32} color="#1A1C1E" />
        </TouchableOpacity>
        <View>
           <Text style={styles.headerTitle}>Edit Profile</Text>

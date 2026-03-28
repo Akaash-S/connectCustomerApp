@@ -25,7 +25,7 @@ const Stack = createNativeStackNavigator();
 
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   const insets = useSafeAreaInsets();
-  
+
   // High-fidelity dynamic height for prominent icons
   const dynamicHeight = 85 + (insets.bottom > 20 ? insets.bottom - 5 : insets.bottom + 10);
 
@@ -55,15 +55,15 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
             >
               <View style={[styles.iconWrapper, isFocused && styles.activeIconWrapper]}>
                 {IconComponent && (
-                  <IconComponent 
-                    focused={isFocused} 
-                    color={isFocused ? '#FFFFFF' : '#94A3B8'} 
+                  <IconComponent
+                    focused={isFocused}
+                    color={isFocused ? '#FFFFFF' : '#94A3B8'}
                     size={26}
                   />
                 )}
               </View>
-              <Text 
-                numberOfLines={1} 
+              <Text
+                numberOfLines={1}
                 style={[
                   styles.tabLabel,
                   { color: isFocused ? PRIMARY_DARK : '#94A3B8', fontWeight: isFocused ? '1000' : '900' }
@@ -79,46 +79,8 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
   );
 };
 
-// Sub-stacks for each tab
-const HomeStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen name="Dashboard" component={HomeScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="RequestHelp" component={RequestHelpScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="Events" component={EventsScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="EventDetails" component={EventDetailsScreen} options={{ headerShown: false }} />
-  </Stack.Navigator>
-);
-
-const NGOStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen name="NGOList" component={NGOsScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="NGODetails" component={NGODetailsScreen} options={{ headerShown: false }} />
-  </Stack.Navigator>
-);
-
-const ReportStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen name="ReportsList" component={RequestsScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="RequestDetails" component={RequestDetailsScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="ReportDetails" component={ReportDetailsScreen} options={{ headerShown: false }} />
-  </Stack.Navigator>
-);
-
-const ProfileStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen name="ProfileMain" component={ProfileScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="MyRequests" component={MyRequestsScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="JoinedEvents" component={JoinedEventsScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="SavedItems" component={SavedItemsScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="Preferences" component={PreferencesScreens} options={{ headerShown: false }} />
-    <Stack.Screen name="SecurityPrivacy" component={SecurityPrivacyScreens} options={{ headerShown: false }} />
-    <Stack.Screen name="SupportHelp" component={SupportHelpScreens} options={{ headerShown: false }} />
-    <Stack.Screen name="Legal" component={LegalScreens} options={{ headerShown: false }} />
-    <Stack.Screen name="VolunteerApplication" component={VolunteerApplicationScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="ImpactLogs" component={ImpactLogsScreen} options={{ headerShown: false }} />
-  </Stack.Navigator>
-);
+// Sub-stacks are no longer needed as all detail screens are in the root stack
+// This ensures 100% resolution for global navigation calls from any hub
 
 const MainTabs = () => {
   return (
@@ -130,7 +92,7 @@ const MainTabs = () => {
     >
       <Tab.Screen
         name="Home"
-        component={HomeStack}
+        component={HomeScreen}
         options={{
           title: 'Hub',
           tabBarIcon: ({ color, size }) => (
@@ -140,7 +102,7 @@ const MainTabs = () => {
       />
       <Tab.Screen
         name="NGOs"
-        component={NGOStack}
+        component={NGOsScreen}
         options={{
           title: 'NGOs',
           tabBarIcon: ({ color, size }) => (
@@ -159,10 +121,10 @@ const MainTabs = () => {
         }}
       />
       <Tab.Screen
-        name="Reports"
-        component={ReportStack}
+        name="Support"
+        component={RequestsScreen}
         options={{
-          title: 'Logs',
+          title: 'Support',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="shield-check" size={size} color={color} />
           )
@@ -170,7 +132,7 @@ const MainTabs = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileStack}
+        component={ProfileScreen}
         options={{
           title: 'Me',
           tabBarIcon: ({ color, size }) => (
@@ -187,7 +149,26 @@ export const AppNavigator = () => (
     <Stack.Screen name="Splash" component={SplashScreen} />
     <Stack.Screen name="Login" component={LoginScreen} />
     <Stack.Screen name="Main" component={MainTabs} />
+    {/* Global Detail Screens - Accessible from any tab */}
+    <Stack.Screen name="RequestDetails" component={RequestDetailsScreen} />
+    <Stack.Screen name="ReportDetails" component={ReportDetailsScreen} />
+    <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
+    <Stack.Screen name="Events" component={EventsScreen} />
+    <Stack.Screen name="NGODetails" component={NGODetailsScreen} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} />
+
+    {/* Global Sub-Screens - Optimized for Monolithic Access */}
+    <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    <Stack.Screen name="MyRequests" component={MyRequestsScreen} />
+    <Stack.Screen name="JoinedEvents" component={JoinedEventsScreen} />
+    <Stack.Screen name="SavedItems" component={SavedItemsScreen} />
+    <Stack.Screen name="Preferences" component={PreferencesScreens} />
+    <Stack.Screen name="SecurityPrivacy" component={SecurityPrivacyScreens} />
+    <Stack.Screen name="SupportHelp" component={SupportHelpScreens} />
+    <Stack.Screen name="Legal" component={LegalScreens} />
+    <Stack.Screen name="VolunteerApplication" component={VolunteerApplicationScreen} />
+    <Stack.Screen name="ImpactLogs" component={ImpactLogsScreen} />
+
   </Stack.Navigator>
 );
 
@@ -215,9 +196,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconWrapper: {
-    width: 65, // Prominent active highlight
+    width: 65,
     height: 48,
-    borderRadius: 24, // Perfectly Rounded Capsules
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,

@@ -66,7 +66,7 @@ export const NGODetailsScreen = ({ route, navigation }) => {
           <View style={styles.bannerOverlay}>
             <View style={[styles.bannerTop, { paddingTop: insets.top + 10 }]}>
               <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                <MaterialCommunityIcons name="chevron-left" size={28} color="#FFF" />
+                <MaterialCommunityIcons name="chevron-left" size={32} color="#FFF" />
               </TouchableOpacity>
             </View>
             <View style={styles.bannerBottom}>

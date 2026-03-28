@@ -8,10 +8,10 @@ import { api } from '../services/api';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const QUICK_ACTIONS = [
-  { id: '1', title: 'Request Help', icon: 'handshake', color: '#FFF1F2', route: 'RequestHelp' },
+  { id: '1', title: 'Request Help', icon: 'handshake', color: '#FFF1F2', route: 'Add' },
   { id: '2', title: 'Find NGOs', icon: 'hand-heart', color: '#F0F9FF', route: 'NGOs' },
-  { id: '3', title: 'Support Peer', icon: 'heart-plus', color: '#F0FDF4', route: 'CommunityFeed' },
-  { id: '4', title: 'Impact Events', icon: 'calendar-star', color: '#FFF7ED', route: 'Events' },
+  { id: '3', title: 'Support Peer', icon: 'hand-heart-outline', color: '#EEF2FF', route: 'Support' },
+  { id: '4', title: 'Impact Hub', icon: 'calendar-star', color: '#FFF7ED', route: 'Events' },
   { id: '5', title: 'Security Hub', icon: 'shield-lock', color: '#F5F3FF', route: 'SecurityPrivacy' },
 ];
 
@@ -73,9 +73,19 @@ export const HomeScreen = ({ navigation }) => {
                 <Text style={styles.greetingHeader}>Hello, {user.fullName.split(' ')[0]}</Text>
                 <Text style={styles.welcomeSub}>Active community member</Text>
               </View>
-              <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.navigate('Profile')}>
-                <Avatar.Image size={44} source={{ uri: user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100' }} />
-              </TouchableOpacity>
+              <View style={styles.headerActions}>
+                <TouchableOpacity 
+                   style={styles.notifIconPill} 
+                   onPress={() => navigation.navigate('Notifications')}
+                   activeOpacity={0.7}
+                >
+                   <MaterialCommunityIcons name="bell-outline" size={24} color="#1A1C1E" />
+                   <View style={styles.activeDot} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.navigate('Profile')}>
+                  <Avatar.Image size={44} source={{ uri: user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100' }} />
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* SEARCH SECTION */}
@@ -220,6 +230,37 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontWeight: '700',
     marginTop: 2,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  notifIconPill: {
+    width: 44,
+    height: 44,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+  },
+  activeDot: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
   profileBtn: {
     padding: 3,

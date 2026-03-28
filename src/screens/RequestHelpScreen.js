@@ -118,14 +118,18 @@ export const RequestHelpScreen = ({ navigation }) => {
         >
            {/* MONOLITHIC INTEGRATED HEADER */}
            <View style={[styles.integratedHeader, { paddingTop: insets.top + 20 }]}>
-              <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                 <MaterialCommunityIcons name="close" size={24} color={PRIMARY_DARK} />
-              </TouchableOpacity>
               <View style={styles.headerTitleGroup}>
                  <Text style={styles.headerTitle}>Support Architect</Text>
                  <Text style={styles.headerSub}>Database Integrity System</Text>
               </View>
-              <View style={{ width: 44 }} />
+              <TouchableOpacity 
+                style={styles.notifIconPill} 
+                onPress={() => navigation.navigate('Notifications')}
+                activeOpacity={0.7}
+              >
+                <MaterialCommunityIcons name="bell-outline" size={24} color="#1A1C1E" />
+                <View style={styles.activeDot} />
+              </TouchableOpacity>
            </View>
 
            {/* IDENTITY SECTION */}
@@ -340,20 +344,17 @@ const styles = StyleSheet.create({
   },
   headerTitleGroup: {
     flex: 1,
-    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 26,
     fontWeight: '910',
-    color: PRIMARY_DARK,
+    color: '#1A1C1E',
     letterSpacing: -0.5,
   },
   headerSub: {
-    fontSize: 11,
-    fontWeight: '910',
+    fontSize: 14,
+    fontWeight: '600',
     color: '#94A3B8',
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
     marginTop: 2,
   },
   scrollContent: {

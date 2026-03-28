@@ -87,14 +87,30 @@ export const EventsScreen = ({ navigation }) => {
           <>
             {/* INTEGRATED SINGLE-LAYER HEADER */}
             <View style={styles.header}>
-              <View>
-                <Text style={styles.headerTitle}>Impact Hub</Text>
-                <Text style={styles.headerSub}>Community initiatives & events</Text>
-              </View>
-              <TouchableOpacity style={styles.notifIconPill}>
-                <MaterialCommunityIcons name="bell-outline" size={24} color="#1A1C1E" />
-                <Badge size={8} style={styles.notifBadge} />
-              </TouchableOpacity>
+                {navigation.canGoBack() ? (
+                  <TouchableOpacity 
+                    onPress={() => navigation.goBack()}
+                    style={styles.backBtn}
+                  >
+                    <MaterialCommunityIcons name="chevron-left" size={32} color="#1A1C1E" />
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.headerSpacer} />
+                )}
+
+                <View style={styles.titleContainer}>
+                   <Text style={styles.headerTitle}>Impact Hub</Text>
+                   <Text style={styles.headerSub}>Community initiatives & events</Text>
+                </View>
+
+                <TouchableOpacity 
+                   style={styles.notifIconPill} 
+                   onPress={() => navigation.navigate('Notifications')}
+                   activeOpacity={0.7}
+                >
+                  <MaterialCommunityIcons name="bell-outline" size={24} color="#1A1C1E" />
+                  <View style={styles.activeDot} />
+                </TouchableOpacity>
             </View>
 
             {/* SEARCH BAR */}
@@ -166,38 +182,72 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginBottom: 40, // Uniform Rhythm
   },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: '910',
-    color: '#1A1C1E',
-    letterSpacing: -0.5,
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  headerSub: {
-    fontSize: 14,
-    color: '#94A3B8',
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  notifIconPill: {
-    width: 48,
-    height: 48,
-    borderRadius: 22,
+  backBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderWidth: 1.5,
+    borderColor: '#F8F9FA',
     elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
   },
-  notifBadge: {
+  titleContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerSpacer: {
+    width: 44,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '910',
+    color: '#1A1C1E',
+    letterSpacing: -0.5,
+    textAlign: 'center',
+  },
+  headerSub: {
+    fontSize: 12,
+    color: '#94A3B8',
+    fontWeight: '600',
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  notifIconPill: {
+    width: 44,
+    height: 44,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#F8F9FA',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+  },
+  activeDot: {
     position: 'absolute',
-    top: 14,
-    right: 14,
+    top: 12,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: '#EF4444',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
   listContent: {
     paddingBottom: 100,

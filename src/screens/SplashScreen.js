@@ -30,7 +30,7 @@ export const SplashScreen = ({ navigation }) => {
         toValue: 1,
         duration: 1500,
         easing: Easing.inOut(Easing.quad),
-        useNativeDriver: true,
+        useNativeDriver: false, // width property doesn't support native driver
       }),
     ]).start();
 

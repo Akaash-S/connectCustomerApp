@@ -3,6 +3,7 @@ import { StyleSheet, View, ScrollView, TouchableOpacity, StatusBar } from 'react
 import { IconButton, Text, useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+const PRIMARY_DARK = '#1A1C1E';
 
 export const ProfileSubScreenWrapper = ({ title, subtitle, children, navigation, footer }) => {
   const insets = useSafeAreaInsets();
@@ -23,13 +24,15 @@ export const ProfileSubScreenWrapper = ({ title, subtitle, children, navigation,
               onPress={() => navigation.goBack()}
               activeOpacity={0.7}
             >
-              <MaterialCommunityIcons name="arrow-left" size={24} color="#1A1C1E" />
+              <MaterialCommunityIcons name="chevron-left" size={32} color={PRIMARY_DARK} />
             </TouchableOpacity>
+            
             <View style={styles.titleContainer}>
                <Text style={styles.headerTitle}>{title}</Text>
                {subtitle && <Text style={styles.headerSub}>{subtitle}</Text>}
             </View>
-            <View style={{ width: 44 }} />
+
+            <View style={styles.headerSpacer} />
         </View>
 
         <View style={styles.childrenContainer}>
@@ -88,6 +91,7 @@ const styles = StyleSheet.create({
     fontWeight: '910',
     color: '#1A1C1E',
     letterSpacing: -0.5,
+    textAlign: 'center',
   },
   headerSub: {
     fontSize: 12,
@@ -95,6 +99,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: 2,
     letterSpacing: 0.5,
+    textAlign: 'center',
+  },
+  headerSpacer: {
+    width: 44,
   },
   childrenContainer: {
     paddingHorizontal: 24,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, StatusBar, TextInput, ScrollView, ActivityIndicator } from 'react-native';
-import { Text, Avatar, Divider, Badge } from 'react-native-paper';
+import { Text, Avatar, Divider } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { api } from '../services/api';
@@ -98,13 +98,17 @@ export const RequestsScreen = ({ navigation }) => {
           <>
             {/* INTEGRATED SINGLE-LAYER HEADER */}
             <View style={styles.header}>
-              <View>
-                <Text style={styles.headerTitle}>Support Hub</Text>
-                <Text style={styles.headerSub}>Highlight and support peer needs</Text>
-              </View>
-              <TouchableOpacity style={styles.notifIconPill}>
+                <View>
+                  <Text style={styles.headerTitle}>Support Hub</Text>
+                  <Text style={styles.headerSub}>Highlight and support peer needs</Text>
+                </View>
+              <TouchableOpacity 
+                 style={styles.notifIconPill} 
+                 onPress={() => navigation.navigate('Notifications')}
+                 activeOpacity={0.7}
+              >
                 <MaterialCommunityIcons name="bell-outline" size={24} color="#1A1C1E" />
-                <Badge size={8} style={styles.badge} />
+                <View style={styles.activeDot} />
               </TouchableOpacity>
             </View>
 
@@ -184,9 +188,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   notifIconPill: {
-    width: 48,
-    height: 48,
-    borderRadius: 22,
+    width: 44,
+    height: 44,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -198,11 +202,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 5,
   },
-  badge: {
+  activeDot: {
     position: 'absolute',
-    top: 14,
-    right: 14,
+    top: 12,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: '#EF4444',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
   listContent: {
     paddingBottom: 100,
