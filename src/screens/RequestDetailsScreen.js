@@ -186,11 +186,11 @@ export const RequestDetailsScreen = ({ route, navigation }) => {
             </View>
           </View>
 
-          <View style={{ height: 100 }} />
+          <View style={{ height: 120 }} />
        </ProfileSubScreenWrapper>
 
        {/* FLOATING ACTION */}
-       <View style={[styles.floatingAction, { paddingBottom: 24 }]}>
+       <View style={[styles.floatingAction, { paddingBottom: 35 }]}>
           <TouchableOpacity style={styles.mainActionBtn} activeOpacity={0.8} onPress={() => navigation.navigate('Events')}>
              <MaterialCommunityIcons name="account-group" size={20} color="#FFFFFF" />
              <Text style={styles.mainActionText}>Find Supporting NGOs</Text>
@@ -213,8 +213,8 @@ const styles = StyleSheet.create({
   },
   heroCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 35,
-    padding: 24,
+    borderRadius: 35, // Premium Radius
+    padding: 24, // Consistent Internal Padding
     borderWidth: 1,
     borderColor: '#F8F9FA',
     elevation: 8,
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 15 },
     shadowOpacity: 0.05,
     shadowRadius: 20,
-    marginBottom: 25,
+    marginBottom: 40, // Master Rhythm
   },
   cardHeader: {
     flexDirection: 'row',
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 14,
+    borderRadius: 18, // Master Icon Box Radius
   },
   categoryText: {
     fontSize: 10,
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: 18, // Master Icon Box Radius
     gap: 8,
   },
   statusDot: {
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   metaIconCircle: {
     width: 44,
     height: 44,
-    borderRadius: 15,
+    borderRadius: 18, // Master Icon Box Radius
     backgroundColor: '#F8F9FA',
     justifyContent: 'center',
     alignItems: 'center',
@@ -318,13 +318,13 @@ const styles = StyleSheet.create({
   actionHub: {
     flexDirection: 'row',
     gap: 15,
-    marginBottom: 35,
+    marginBottom: 40, // Master Rhythm
   },
   highlightBtn: {
     flex: 1,
     height: 100,
     backgroundColor: '#F0F9FF',
-    borderRadius: 30,
+    borderRadius: 35, // Premium Card Radius (Large Action)
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 100,
     backgroundColor: '#FFF1F2',
-    borderRadius: 30,
+    borderRadius: 35, // Premium Card Radius (Large Action)
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   section: {
-    marginBottom: 35,
+    marginBottom: 40, // Master Rhythm
   },
   sectionTitle: {
     fontSize: 18,
@@ -367,14 +367,14 @@ const styles = StyleSheet.create({
   evidenceImage: {
     width: 200,
     height: 140,
-    borderRadius: 30,
+    borderRadius: 35, // Master Premium Radius
     marginRight: 15,
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
   mapCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 35,
+    borderRadius: 35, // Master Premium Radius
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#F8F9FA',
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     height: 160,
   },
   mapFooter: {
-    padding: 24,
+    padding: 24, // Consistent Internal Padding
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1A1C1E',
     paddingHorizontal: 18,
     paddingVertical: 12,
-    borderRadius: 14,
+    borderRadius: 18, // Master Icon Box Radius
   },
   navBtnText: {
     color: '#FFFFFF',
@@ -417,12 +417,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: 24,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: 'rgba(255,255,255,0.92)',
   },
   mainActionBtn: {
     backgroundColor: '#1A1C1E',
     height: 60,
-    borderRadius: 24,
+    borderRadius: 30, // Premium Capsule Radius
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',

@@ -81,7 +81,7 @@ export const EventsScreen = ({ navigation }) => {
         data={events}
         renderItem={renderEventItem}
         keyExtractor={item => item.id}
-        contentContainerStyle={[styles.listContent, { paddingTop: insets.top }]}
+        contentContainerStyle={[styles.listContent, { paddingTop: insets.top + 20 }]}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    paddingBottom: 25,
+    marginBottom: 40, // Uniform Rhythm
   },
   headerTitle: {
     fontSize: 26,
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     paddingHorizontal: 24,
-    marginBottom: 20,
+    marginBottom: 40, // Uniform Rhythm
   },
   searchBox: {
     flexDirection: 'row',
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     color: '#1A1C1E',
   },
   categoryWrapper: {
-    marginBottom: 25,
+    marginBottom: 40, // Uniform Rhythm
   },
   categoryScroll: {
     paddingHorizontal: 24,
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   },
   eventCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 35,
+    borderRadius: 35, // Premium Radius
     overflow: 'hidden',
     marginBottom: 20,
     marginHorizontal: 24,
@@ -278,10 +278,10 @@ const styles = StyleSheet.create({
   },
   dateBadge: {
     position: 'absolute',
-    top: 15,
-    left: 15,
+    top: 20, // Grid Mesh Alignment
+    left: 20, // Grid Mesh Alignment
     backgroundColor: 'rgba(255,255,255,0.95)',
-    borderRadius: 18,
+    borderRadius: 18, // Premium Icon Box Radius
     width: 60,
     height: 65,
     justifyContent: 'center',
@@ -302,23 +302,23 @@ const styles = StyleSheet.create({
   },
   typeTag: {
     position: 'absolute',
-    top: 15,
-    right: 15,
+    top: 20, // Grid Mesh Alignment
+    right: 20, // Grid Mesh Alignment
     backgroundColor: 'rgba(26,28,30,0.8)',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 10,
+    borderRadius: 12,
     zIndex: 10,
   },
   typeText: {
     color: '#FFFFFF',
     fontSize: 10,
-    fontWeight: '900',
+    fontWeight: '910',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   cardBody: {
-    padding: 24,
+    padding: 24, // Consistent Internal Padding
   },
   eventTitle: {
     fontSize: 20,
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 18,
+    paddingTop: 24, // Unified Internal Padding
     borderTopWidth: 1,
     borderTopColor: '#F8F9FA',
   },
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1A1C1E',
     paddingHorizontal: 18,
     paddingVertical: 10,
-    borderRadius: 15,
+    borderRadius: 18, // Standardized Button Radius
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   joinBtnText: {
     color: '#FFFFFF',
     fontSize: 13,
-    fontWeight: '900',
+    fontWeight: '910',
   },
   emptyContainer: {
     alignItems: 'center',

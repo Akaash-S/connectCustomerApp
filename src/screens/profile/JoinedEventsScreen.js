@@ -81,12 +81,12 @@ export const JoinedEventsScreen = ({ navigation }) => {
           subtitle="Impact events you joined" 
           navigation={navigation}
         >
-          {/* SEARCH BAR (HUB CONSISTENT) */}
-          <View style={styles.searchContainer}>
+          {/* SEARCH SECTION */}
+          <View style={styles.searchSection}>
             <View style={styles.searchBox}>
               <MaterialCommunityIcons name="magnify" size={24} color="#94A3B8" />
               <TextInput 
-                placeholder="Search your joined events..." 
+                placeholder="Search joined events..." 
                 style={styles.searchInput}
                 placeholderTextColor="#94A3B8"
                 value={searchQuery}
@@ -95,9 +95,13 @@ export const JoinedEventsScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* CATEGORY CHIPS */}
-          <View style={styles.categoryContainer}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+          {/* CATEGORY SECTION */}
+          <View style={styles.categorySection}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              contentContainerStyle={styles.categoryScroll}
+            >
               {CATEGORIES.map(cat => (
                 <TouchableOpacity 
                   key={cat} 
@@ -121,15 +125,17 @@ export const JoinedEventsScreen = ({ navigation }) => {
               keyExtractor={item => item.id}
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
-              scrollEnabled={false} // Since it's inside ScrollView of Wrapper
+              scrollEnabled={false} // Managed by Wrapper ScrollView
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <MaterialCommunityIcons name="calendar-blank-outline" size={60} color="#F1F5F9" />
-                  <Text style={styles.emptyText}>No Data</Text>
+                  <Text style={styles.emptyText}>No events found</Text>
                 </View>
               }
             />
           )}
+
+          <View style={{ height: 40 }} />
         </ProfileSubScreenWrapper>
     </View>
   );
@@ -140,9 +146,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  searchContainer: {
-    marginBottom: 20,
-    marginTop: 10,
+  searchSection: {
+    marginBottom: 40, // Master Rhythm Spacing
   },
   searchBox: {
     flexDirection: 'row',
@@ -150,7 +155,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
     borderRadius: 28,
     paddingHorizontal: 20,
-    height: 56,
+    height: 60,
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
@@ -158,19 +163,19 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 12,
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#1A1C1E',
   },
-  categoryContainer: {
-    marginBottom: 25,
+  categorySection: {
+    marginBottom: 40, // Master Rhythm
   },
   categoryScroll: {
-    gap: 10,
+    gap: 12,
   },
   categoryChip: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 25,
+    borderRadius: 20,
     backgroundColor: '#F8F9FA',
     borderWidth: 1,
     borderColor: '#F1F5F9',
@@ -180,9 +185,9 @@ const styles = StyleSheet.create({
     borderColor: '#1A1C1E',
   },
   chipText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#94A3B8',
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#64748B',
   },
   activeChipText: {
     color: '#FFFFFF',
@@ -196,22 +201,22 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 35,
-    padding: 24,
+    borderRadius: 35, // Premium Radius
+    padding: 24, // Consistent Internal Padding
     marginBottom: 20,
     borderWidth: 1,
     borderColor: '#F8F9FA',
-    elevation: 4,
+    elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.04,
-    shadowRadius: 15,
+    shadowRadius: 20,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   ngoInfo: {
     flexDirection: 'row',
@@ -219,9 +224,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   avatarCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18, // Master Icon Box Radius
     backgroundColor: '#1A1C1E',
     justifyContent: 'center',
     alignItems: 'center',
@@ -229,35 +234,36 @@ const styles = StyleSheet.create({
   avatarText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '900',
+    fontWeight: '910',
   },
   ngoName: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
     color: '#94A3B8',
   },
   statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: 18, // Master Icon Box Radius
   },
   statusText: {
     fontSize: 10,
-    fontWeight: '900',
+    fontWeight: '910',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   title: {
     fontSize: 18,
-    fontWeight: '900',
+    fontWeight: '910',
     color: '#1A1C1E',
-    marginBottom: 15,
+    marginBottom: 24,
     lineHeight: 24,
+    letterSpacing: -0.2,
   },
   details: {
     flexDirection: 'row',
     gap: 20,
-    paddingTop: 15,
+    paddingTop: 24, // Unified Internal Padding
     borderTopWidth: 1,
     borderTopColor: '#F8F9FA',
   },
@@ -273,7 +279,7 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     alignItems: 'center',
-    marginTop: 40,
+    paddingVertical: 50,
   },
   emptyText: {
     marginTop: 20,

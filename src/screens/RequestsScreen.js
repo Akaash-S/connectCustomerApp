@@ -92,7 +92,7 @@ export const RequestsScreen = ({ navigation }) => {
         data={requests}
         renderItem={renderRequestItem}
         keyExtractor={item => item.id}
-        contentContainerStyle={[styles.listContent, { paddingTop: insets.top }]}
+        contentContainerStyle={[styles.listContent, { paddingTop: insets.top + 20 }]}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
@@ -124,7 +124,11 @@ export const RequestsScreen = ({ navigation }) => {
 
             {/* CATEGORY CHIPS */}
             <View style={styles.categoryWrapper}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                contentContainerStyle={styles.categoryScroll}
+              >
                 {CATEGORIES.map(cat => (
                   <TouchableOpacity 
                     key={cat} 
@@ -165,7 +169,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    paddingBottom: 25,
+    marginBottom: 40, // Uniform Rhythm
   },
   headerTitle: {
     fontSize: 26,
@@ -205,7 +209,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     paddingHorizontal: 24,
-    marginBottom: 20,
+    marginBottom: 40, // Uniform Rhythm
   },
   searchBox: {
     flexDirection: 'row',
@@ -225,7 +229,7 @@ const styles = StyleSheet.create({
     color: '#1A1C1E',
   },
   categoryWrapper: {
-    marginBottom: 25,
+    marginBottom: 40, // Uniform Rhythm
   },
   categoryScroll: {
     paddingHorizontal: 24,
@@ -253,8 +257,8 @@ const styles = StyleSheet.create({
   },
   requestCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 35,
-    padding: 24,
+    borderRadius: 35, // Premium Radius
+    padding: 24, // Consistent Internal Padding
     marginBottom: 20,
     marginHorizontal: 24,
     borderWidth: 1,
@@ -291,7 +295,7 @@ const styles = StyleSheet.create({
   highlightBtn: {
     width: 60,
     height: 60,
-    borderRadius: 18,
+    borderRadius: 18, // Premium Icon Box Radius
     backgroundColor: '#F0F9FF',
     justifyContent: 'center',
     alignItems: 'center',

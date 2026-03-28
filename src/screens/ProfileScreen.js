@@ -50,7 +50,10 @@ export const ProfileScreen = ({ navigation }) => {
       <ScrollView 
         style={styles.container} 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: insets.top, paddingBottom: 120 }}
+        contentContainerStyle={{ 
+            paddingTop: insets.top + 20, 
+            paddingBottom: 120 
+        }}
         scrollEnabled={true}
       >
         {/* INTEGRATED SINGLE-LAYER HEADER (HUB STYLE) */}
@@ -204,7 +207,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    paddingBottom: 20,
+    marginBottom: 40, // Master Rhythm
   },
   headerTitle: {
     fontSize: 26,
@@ -224,19 +227,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#EFF6FF',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 15,
+    borderRadius: 18, // Premium Pills
     gap: 6,
     borderWidth: 1,
     borderColor: '#DBEAFE',
   },
   profileBadgeText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '910',
     color: '#3B82F6',
   },
   profileHero: {
     alignItems: 'center',
-    paddingVertical: 30,
+    marginBottom: 40, // Master Rhythm
   },
   avatarWrapper: {
     position: 'relative',
@@ -259,7 +262,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1A1C1E',
     width: 34,
     height: 34,
-    borderRadius: 17,
+    borderRadius: 18, // Premium Icon Box Radius
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
@@ -279,12 +282,12 @@ const styles = StyleSheet.create({
   },
   sectionWrapper: {
     paddingHorizontal: 24,
-    marginBottom: 35,
+    marginBottom: 40, // Master Rhythm
   },
   impactCard: {
     backgroundColor: '#1A1C1E',
-    borderRadius: 40,
-    padding: 24,
+    borderRadius: 35, // Master Premium Radius
+    padding: 24, // Consistent Internal Padding
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 15 },
@@ -306,11 +309,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.1)',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: 18, // Master Icon Box Radius
   },
   xpText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '910',
   },
   progressBar: {
@@ -338,8 +341,8 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '900',
     textTransform: 'uppercase',
-    marginTop: 4,
-    letterSpacing: 1,
+    marginTop: 6,
+    letterSpacing: 1.5,
   },
   statDivider: {
     width: 1,
@@ -350,7 +353,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '910',
     color: '#1A1C1E',
-    marginBottom: 20,
+    marginBottom: 16,
     letterSpacing: -0.5,
   },
   badgeScroll: {
@@ -359,8 +362,8 @@ const styles = StyleSheet.create({
   badgeItem: {
     width: 130,
     height: 130,
-    borderRadius: 35,
-    padding: 20,
+    borderRadius: 35, // Master Premium Radius
+    padding: 24,
     justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: '#F1F5F9',
@@ -373,7 +376,7 @@ const styles = StyleSheet.create({
   },
   actionSection: {
     paddingHorizontal: 24,
-    marginBottom: 35,
+    marginBottom: 40, // Master Rhythm
   },
   actionGrid: {
     flexDirection: 'row',
@@ -383,8 +386,8 @@ const styles = StyleSheet.create({
   gridBtn: {
     width: (SCREEN_WIDTH - 63) / 2,
     backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 30,
+    padding: 24, // Consistent Internal Padding
+    borderRadius: 35, // Master Premium Radius
     borderWidth: 1,
     borderColor: '#F8F9FA',
     elevation: 4,
@@ -396,7 +399,7 @@ const styles = StyleSheet.create({
   gridIcon: {
     width: 48,
     height: 48,
-    borderRadius: 15,
+    borderRadius: 18, // Master Icon Box Radius
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -408,7 +411,7 @@ const styles = StyleSheet.create({
   },
   feedSection: {
     paddingHorizontal: 24,
-    marginBottom: 40,
+    marginBottom: 40, // Master Rhythm
   },
   feedContainer: {
     marginTop: 10,
@@ -416,13 +419,13 @@ const styles = StyleSheet.create({
   feedItem: {
     flexDirection: 'row',
     gap: 20,
-    marginBottom: 25,
+    marginBottom: 30,
   },
   feedLine: {
     position: 'absolute',
     left: 4,
     top: 15,
-    bottom: -20,
+    bottom: -25,
     width: 2,
     backgroundColor: '#F1F5F9',
   },
@@ -431,7 +434,7 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     backgroundColor: '#CBD5E1',
-    marginTop: 6,
+    marginTop: 8,
     borderWidth: 2,
     borderColor: '#FFFFFF',
     zIndex: 10,
@@ -448,9 +451,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#94A3B8',
     fontWeight: '700',
-    marginTop: 2,
+    marginTop: 4,
   },
   logoutBtn: {
-    marginBottom: 30,
+    marginBottom: 40,
   }
 });

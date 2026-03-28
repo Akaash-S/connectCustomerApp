@@ -141,8 +141,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   searchContainer: {
-    marginBottom: 20,
-    marginTop: 10,
+    marginBottom: 40, // Master Rhythm Spacing
   },
   searchBox: {
     flexDirection: 'row',

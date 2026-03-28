@@ -72,7 +72,7 @@ export const NGOsScreen = ({ navigation }) => {
         data={ngos}
         renderItem={renderNGOItem}
         keyExtractor={item => item.id}
-        contentContainerStyle={[styles.listContent, { paddingTop: insets.top }]}
+        contentContainerStyle={[styles.listContent, { paddingTop: insets.top + 20 }]}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
@@ -92,7 +92,7 @@ export const NGOsScreen = ({ navigation }) => {
               <View style={styles.searchBox}>
                 <MaterialCommunityIcons name="magnify" size={24} color="#94A3B8" />
                 <TextInput 
-                  placeholder="Search by name or category..." 
+                  placeholder="Search partners..." 
                   style={styles.searchInput}
                   placeholderTextColor="#94A3B8"
                   value={searchQuery}
@@ -103,7 +103,11 @@ export const NGOsScreen = ({ navigation }) => {
 
             {/* CATEGORY CHIPS */}
             <View style={styles.categoryWrapper}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                contentContainerStyle={styles.categoryScroll}
+              >
                 {CATEGORIES.map(cat => (
                   <TouchableOpacity 
                     key={cat} 
@@ -124,7 +128,7 @@ export const NGOsScreen = ({ navigation }) => {
             </View>
           ) : (
             <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="office-building-off-outline" size={60} color="#F1F5F9" />
+              <MaterialCommunityIcons name="office-building-marker-outline" size={60} color="#F1F5F9" />
               <Text style={styles.emptyText}>No Partners Found</Text>
             </View>
           )
@@ -144,7 +148,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    paddingBottom: 25,
+    marginBottom: 40, // Uniform Rhythm
   },
   headerTitle: {
     fontSize: 26,
@@ -178,7 +182,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     paddingHorizontal: 24,
-    marginBottom: 20,
+    marginBottom: 40, // Uniform Rhythm
   },
   searchBox: {
     flexDirection: 'row',
@@ -198,7 +202,7 @@ const styles = StyleSheet.create({
     color: '#1A1C1E',
   },
   categoryWrapper: {
-    marginBottom: 25,
+    marginBottom: 40, // Uniform Rhythm
   },
   categoryScroll: {
     paddingHorizontal: 24,
@@ -230,8 +234,8 @@ const styles = StyleSheet.create({
   },
   ngoCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 35,
-    padding: 24,
+    borderRadius: 35, // Premium Radius
+    padding: 24, // Consistent Internal Padding
     marginHorizontal: 24,
     marginBottom: 20,
     borderWidth: 1,
@@ -250,7 +254,7 @@ const styles = StyleSheet.create({
   avatarCircle: {
     width: 60,
     height: 60,
-    borderRadius: 18,
+    borderRadius: 18, // Premium Icon Box Radius
     backgroundColor: '#1A1C1E',
     justifyContent: 'center',
     alignItems: 'center',
@@ -258,7 +262,7 @@ const styles = StyleSheet.create({
   avatarText: {
     color: '#FFFFFF',
     fontSize: 24,
-    fontWeight: '900',
+    fontWeight: '910',
   },
   ngoInfo: {
     flex: 1,
@@ -288,7 +292,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 18,
+    paddingTop: 24, // Unified Internal Padding
     borderTopWidth: 1,
     borderTopColor: '#F8F9FA',
   },
@@ -313,7 +317,7 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     fontSize: 14,
-    fontWeight: '900',
+    fontWeight: '910',
     color: '#1A1C1E',
   },
   emptyContainer: {

@@ -99,6 +99,14 @@ export const api = {
     if (!res.ok) throw new Error('Failed to fetch security status');
     return res.json();
   },
+  revokeSession: async (sessionId) => {
+    const res = await fetch(`${API_BASE_URL}/users/me/sessions/${sessionId}/revoke`, { 
+      method: 'POST',
+      headers: await getHeaders() 
+    });
+    if (!res.ok) throw new Error('Failed to revoke session');
+    return res.json();
+  },
   toggleVolunteerMode: async () => {
     const res = await fetch(`${API_BASE_URL}/users/me/toggle-volunteer`, { 
       method: 'POST',

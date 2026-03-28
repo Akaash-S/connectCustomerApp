@@ -13,7 +13,7 @@ export const ProfileSubScreenWrapper = ({ title, subtitle, children, navigation,
       
       <ScrollView 
         style={styles.container} 
-        contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top }]}
+        contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top + 20 }]}
         showsVerticalScrollIndicator={false}
       >
         {/* INTEGRATED SINGLE-LAYER HEADER */}
@@ -62,12 +62,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    paddingBottom: 25,
+    marginBottom: 40, // Master Rhythm Spacing
   },
   backPill: {
     width: 44,
     height: 44,
-    borderRadius: 20,
+    borderRadius: 18, // Master Icon Box Radius
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
