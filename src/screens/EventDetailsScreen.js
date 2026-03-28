@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { Text, useTheme, Button, IconButton, Avatar, Card, Divider, ProgressBar } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { api } from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -11,8 +12,72 @@ const GALLERY = [
   'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400',
 ];
 
-export const EventDetailsScreen = ({ navigation }) => {
+export const EventDetailsScreen = ({ route, navigation }) => {
   const theme = useTheme();
+  const { eventId } = route.params || {};
+
+  const [event, setEvent] = useState({
+    title: 'Loading Event...',
+    hostName: 'Loading NGO...',
+    date: '-',
+    time: '-',
+    location: 'Loading...',
+    description: 'Fetching event details...',
+    volunteersJoined: 0,
+    volunteersNeeded: 1,
+    bannerImage: 'https://images.unsplash.com/photo-1621451537084-482c73073a0f?w=800',
+    isJoined: false
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isJoining, setIsJoining] = useState(false);
+
+  useEffect(() => {
+    if (!eventId) return;
+
+    const fetchDetails = async () => {
+      try {
+        const data = await api.getEventDetails(eventId);
+        if (data) {
+          setEvent({
+            title: data.title,
+            hostName: data.hostName || 'Community NGO',
+            date: data.date || (data.eventDate ? new Date(data.eventDate).toLocaleDateString() : 'TBD'),
+            time: data.time || (data.eventDate ? new Date(data.eventDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBD'),
+            location: data.location,
+            description: data.description,
+            volunteersJoined: data.volunteersJoined || 0,
+            volunteersNeeded: data.volunteersNeeded || 50,
+            bannerImage: data.bannerImage || 'https://images.unsplash.com/photo-1621451537084-482c73073a0f?w=800',
+            isJoined: false
+          });
+        }
+      } catch (error) {
+        console.warn("API Error (EventDetails):", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDetails();
+  }, [eventId]);
+
+  const handleJoinEvent = async () => {
+    setIsJoining(true);
+    try {
+      const success = await api.joinEvent(eventId);
+      if (success) {
+        setEvent(prev => ({ 
+          ...prev, 
+          volunteersJoined: prev.volunteersJoined + 1,
+          isJoined: true 
+        }));
+      }
+    } catch (error) {
+      console.warn("API Error (JoinEvent):", error);
+    } finally {
+      setIsJoining(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -20,7 +85,7 @@ export const EventDetailsScreen = ({ navigation }) => {
         {/* Top Banner */}
         <View style={styles.bannerContainer}>
           <Image 
-            source={{ uri: 'https://images.unsplash.com/photo-1621451537084-482c73073a0f?w=800' }} 
+            source={{ uri: event.bannerImage }} 
             style={styles.bannerImage} 
           />
           <View style={styles.bannerOverlay}>
@@ -31,10 +96,10 @@ export const EventDetailsScreen = ({ navigation }) => {
               <View style={styles.trendingBadge}>
                 <Text style={styles.trendingText}>🔥 Trending Event</Text>
               </View>
-              <Text variant="displaySmall" style={styles.eventTitle}>Beach Cleanup Drive</Text>
+              <Text variant="displaySmall" style={styles.eventTitle}>{event.title}</Text>
               <View style={styles.hostRow}>
-                <Avatar.Text size={24} label="GE" style={{ backgroundColor: theme.colors.primary }} />
-                <Text variant="titleMedium" style={styles.hostName}>Hosted by Green Earth NGO</Text>
+                <Avatar.Text size={24} label={event.hostName.substring(0,2).toUpperCase()} style={{ backgroundColor: theme.colors.primary }} />
+                <Text variant="titleMedium" style={styles.hostName}>Hosted by {event.hostName}</Text>
               </View>
             </View>
           </View>
@@ -46,21 +111,21 @@ export const EventDetailsScreen = ({ navigation }) => {
             <MaterialCommunityIcons name="calendar" size={18} color="#D97706" />
             <View style={styles.infoTextContainer}>
               <Text variant="labelSmall" style={styles.infoLabel}>DATE</Text>
-              <Text variant="titleSmall" style={styles.infoValue}>25 Mar</Text>
+              <Text variant="titleSmall" style={styles.infoValue}>{event.date}</Text>
             </View>
           </View>
           <View style={styles.infoItem}>
             <MaterialCommunityIcons name="clock-outline" size={18} color="#0369A1" />
             <View style={styles.infoTextContainer}>
               <Text variant="labelSmall" style={styles.infoLabel}>TIME</Text>
-              <Text variant="titleSmall" style={styles.infoValue}>7:00 AM</Text>
+              <Text variant="titleSmall" style={styles.infoValue}>{event.time}</Text>
             </View>
           </View>
           <View style={styles.infoItem}>
             <MaterialCommunityIcons name="map-marker" size={18} color="#166534" />
             <View style={styles.infoTextContainer}>
               <Text variant="labelSmall" style={styles.infoLabel}>PLACE</Text>
-              <Text variant="titleSmall" style={styles.infoValue}>Marina</Text>
+              <Text variant="titleSmall" style={styles.infoValue}>{event.location.split(',')[0]}</Text>
             </View>
           </View>
         </View>
@@ -78,9 +143,9 @@ export const EventDetailsScreen = ({ navigation }) => {
               </View>
             </View>
             <View style={styles.mapFooter}>
-              <View>
-                <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>Marina Beach, Chennai</Text>
-                <Text variant="bodySmall" style={{ color: '#6B7280' }}>2.1 km away</Text>
+              <View style={{ flex: 1 }}>
+                <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>{event.location}</Text>
+                <Text variant="bodySmall" style={{ color: '#6B7280' }}>Nearby</Text>
               </View>
               <IconButton 
                 icon="directions" 
@@ -97,9 +162,7 @@ export const EventDetailsScreen = ({ navigation }) => {
         <View style={styles.section}>
           <Text variant="titleLarge" style={styles.sectionTitle}>About this Event</Text>
           <Text variant="bodyMedium" style={styles.aboutText}>
-            Join us for a community beach cleanup to help reduce plastic pollution and protect marine life. 
-            We provide all the tools, bags, and gloves. It's a great way to meet fellow nature lovers 
-            and make a real impact on our coastline!
+            {event.description}
           </Text>
         </View>
 
@@ -108,9 +171,13 @@ export const EventDetailsScreen = ({ navigation }) => {
           <View style={styles.statsCard}>
             <View style={styles.statsHeader}>
               <Text variant="titleMedium" style={styles.statsTitle}>Volunteer Progress</Text>
-              <Text variant="titleMedium" style={styles.statsProgress}>25 / 50 Joined</Text>
+              <Text variant="titleMedium" style={styles.statsProgress}>{event.volunteersJoined} / {event.volunteersNeeded} Joined</Text>
             </View>
-            <ProgressBar progress={0.5} color="#BBF7D0" style={styles.statLine} />
+            <ProgressBar 
+              progress={event.volunteersJoined / (event.volunteersNeeded || 1)} 
+              color="#BBF7D0" 
+              style={styles.statLine} 
+            />
             <View style={styles.impactRow}>
               <View style={styles.impactBadge}>
                 <Text style={styles.impactText}>⭐ High Impact</Text>
@@ -128,6 +195,19 @@ export const EventDetailsScreen = ({ navigation }) => {
               <Image key={index} source={{ uri: img }} style={styles.galleryImage} />
             ))}
           </ScrollView>
+        </View>
+
+        <View style={styles.section}>
+          <Button 
+            mode="contained" 
+            onPress={handleJoinEvent} 
+            loading={isJoining}
+            disabled={event.isJoined}
+            style={styles.joinActionBtn}
+            contentStyle={{ height: 56 }}
+          >
+            {event.isJoined ? 'REGISTERED' : 'JOIN THIS EVENT'}
+          </Button>
         </View>
 
         <View style={{ height: 160 }} />

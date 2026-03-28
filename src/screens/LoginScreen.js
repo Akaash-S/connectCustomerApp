@@ -1,85 +1,70 @@
-import React, { useRef, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Dimensions, Animated, Easing } from 'react-native';
+import React, { useRef, useEffect, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Dimensions, Animated, Easing, Alert, StatusBar } from 'react-native';
 import { Text, Button, IconButton } from 'react-native-paper';
-import { BlurView } from 'expo-blur';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { auth } from '../services/auth';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const PRIMARY_COLOR = '#D97706';
 
 export const LoginScreen = ({ navigation }) => {
-  const floatAnim = useRef(new Animated.Value(0)).current;
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [authStatus, setAuthStatus] = useState('Continue with Google');
 
-  useEffect(() => {
-    // Gentle floating animation for the card
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: 1,
-          duration: 3000,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 3000,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
-
-  const handleLogin = () => {
-    navigation.replace('Main');
+  const handleLogin = async () => {
+    setIsLoggingIn(true);
+    setAuthStatus('Signing in...');
+    try {
+      await auth.signInWithGoogle();
+      setAuthStatus('Syncing Profile...');
+      navigation.replace('Main');
+    } catch (error) {
+      console.warn("Google Login Error:", error);
+      setAuthStatus('Continue with Google');
+      Alert.alert(
+        "Login Note", 
+        "We couldn't sync your profile with the server right now (it might be waking up). Please try once more in 10 seconds.",
+        [{ text: "OK" }]
+      );
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
-  const MeshBackground = () => (
-    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFFFFF' }]}>
-      <View style={[styles.blob, { top: -200, left: -100, backgroundColor: 'rgba(217, 119, 6, 0.2)', width: 600, height: 600 }]} />
-      <View style={[styles.blob, { bottom: SCREEN_HEIGHT * 0.1, right: -150, backgroundColor: 'rgba(16, 185, 129, 0.15)', width: 700, height: 700 }]} />
-      <View style={[styles.blob, { top: SCREEN_HEIGHT * 0.3, left: -150, backgroundColor: 'rgba(59, 130, 246, 0.1)', width: 400, height: 400 }]} />
-    </View>
-  );
-
-  const cardTranslateY = floatAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -15],
-  });
-
   return (
-    <View style={styles.container}>
-      <MeshBackground />
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="dark-content" />
       
-      <Animated.View style={[styles.loginCardContainer, { transform: [{ translateY: cardTranslateY }] }]}>
-        <BlurView intensity={50} tint="light" style={styles.glassCard}>
-          <View style={styles.logoBadge}>
-            <Text style={styles.logoChar}>C</Text>
-          </View>
-          
-          <Text style={styles.welcomeText}>Welcome Home</Text>
-          <Text style={styles.subtitle}>
-            Join the movement. Connect with NGOs and start volunteering in seconds.
+      <View style={styles.topSection}>
+        <View style={styles.logoCircle}>
+          <Text style={styles.logoChar}>C</Text>
+        </View>
+        <Text style={styles.brandName}>CONNECT</Text>
+        <Text style={styles.brandTagline}>COMMUNITY POWERED</Text>
+      </View>
+
+      <View style={styles.contentSection}>
+        <View style={styles.welcomeCard}>
+          <Text style={styles.welcomeTitle}>Welcome Home</Text>
+          <Text style={styles.welcomeSubtext}>
+            Join thousands of volunteers and organizations making a real difference in Chennai every day.
           </Text>
 
-          <View style={styles.actionSection}>
-            <Button 
-              mode="contained" 
-              onPress={handleLogin} 
-              style={styles.getStartedBtn}
-              contentStyle={styles.getStartedBtnContent}
-              labelStyle={styles.getStartedBtnLabel}
-              activeOpacity={1}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={[styles.googleBtn, isLoggingIn && styles.googleBtnDisabled]} 
+              onPress={handleLogin}
+              disabled={isLoggingIn}
             >
-              Get Started
-            </Button>
+              <MaterialCommunityIcons name="google" size={24} color="#FFFFFF" />
+              <Text style={styles.googleBtnText}>{authStatus}</Text>
+            </TouchableOpacity>
             
-            <TouchableOpacity style={styles.alternateOption} activeOpacity={1}>
-              <Text style={styles.alternateText}>Trouble signing in?</Text>
+            <TouchableOpacity style={styles.troubleBtn}>
+              <Text style={styles.troubleText}>Trouble signing in?</Text>
             </TouchableOpacity>
           </View>
-        </BlurView>
-      </Animated.View>
+        </View>
+      </View>
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>
@@ -93,116 +78,122 @@ export const LoginScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  mainContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  blob: {
-    position: 'absolute',
-    borderRadius: 200,
-    opacity: 0.6,
-  },
-  loginCardContainer: {
-    width: '100%',
-    alignItems: 'center',
-  },
-  glassCard: {
-    width: '100%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 48,
-    padding: 32,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    alignItems: 'center',
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 25 },
-    shadowOpacity: 0.12,
-    shadowRadius: 40,
-    elevation: 10,
+    justifyContent: 'space-between',
+    paddingVertical: 60,
   },
-  logoBadge: {
-    width: 60,
-    height: 60,
-    borderRadius: 18,
-    backgroundColor: PRIMARY_COLOR,
+  topSection: {
+    alignItems: 'center',
+    marginTop: 40,
+  },
+  logoCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    backgroundColor: '#1A1C1E',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
-    elevation: 5,
+    marginBottom: 20,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
   },
   logoChar: {
     color: '#FFF',
-    fontSize: 28,
+    fontSize: 40,
     fontWeight: '900',
   },
-  welcomeText: {
+  brandName: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1A1C1E',
+    letterSpacing: 8,
+    textTransform: 'uppercase',
+  },
+  brandTagline: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#94A3B8',
+    marginTop: 8,
+    letterSpacing: 3,
+  },
+  contentSection: {
+    paddingHorizontal: 24,
+  },
+  welcomeCard: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 40,
+    padding: 32,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  welcomeTitle: {
     fontSize: 28,
     fontWeight: '900',
     color: '#1A1C1E',
     textAlign: 'center',
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+  welcomeSubtext: {
+    fontSize: 15,
+    color: '#94A3B8',
     textAlign: 'center',
-    marginTop: 12,
-    lineHeight: 22,
-    paddingHorizontal: 10,
+    marginTop: 16,
+    lineHeight: 24,
+    fontWeight: '500',
   },
-  actionSection: {
+  buttonContainer: {
     width: '100%',
     marginTop: 40,
   },
-  getStartedBtn: {
-    borderRadius: 24,
-    backgroundColor: PRIMARY_COLOR,
+  googleBtn: {
+    height: 70,
+    backgroundColor: '#1A1C1E',
+    borderRadius: 35,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
     elevation: 8,
-    shadowColor: PRIMARY_COLOR,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
     shadowRadius: 20,
   },
-  getStartedBtnContent: {
-    height: 72,
+  googleBtnDisabled: {
+    opacity: 0.8,
   },
-  getStartedBtnLabel: {
-    fontSize: 18,
-    fontWeight: '900',
+  googleBtnText: {
     color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '900',
     textTransform: 'uppercase',
-    letterSpacing: 2,
+    letterSpacing: 1,
   },
-  googleIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  alternateOption: {
+  troubleBtn: {
     marginTop: 20,
     alignItems: 'center',
   },
-  alternateText: {
+  troubleText: {
+    color: '#94A3B8',
     fontSize: 13,
-    color: PRIMARY_COLOR,
     fontWeight: '700',
   },
   footer: {
-    position: 'absolute',
-    bottom: 50,
+    alignItems: 'center',
+    paddingBottom: 20,
   },
   footerText: {
     fontSize: 12,
-    color: '#9CA3AF',
-    textAlign: 'center',
+    color: '#94A3B8',
+    fontWeight: '500',
   },
   legalLink: {
-    color: '#6B7280',
-    fontWeight: 'bold',
+    color: '#1A1C1E',
+    fontWeight: '800',
   }
 });

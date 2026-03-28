@@ -1,11 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Text, Button, IconButton, useTheme, Card } from 'react-native-paper';
 import { ProfileSubScreenWrapper } from '../components/ProfileSubScreenWrapper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { api } from '../services/api';
 
 export const VolunteerApplicationScreen = ({ navigation }) => {
   const theme = useTheme();
+  const [isApplying, setIsApplying] = useState(false);
+
+  const handleApply = async () => {
+    setIsApplying(true);
+    try {
+      await api.syncUser({ isVolunteer: true });
+      // In a real app, we might navigate to a success screen or update local state
+      navigation.goBack();
+    } catch (error) {
+      console.warn("Volunteer application error:", error);
+    } finally {
+      setIsApplying(false);
+    }
+  };
 
   return (
     <ProfileSubScreenWrapper title="Volunteer Program" navigation={navigation}>
@@ -38,7 +53,9 @@ export const VolunteerApplicationScreen = ({ navigation }) => {
 
         <Button 
           mode="contained" 
-          onPress={() => {}} 
+          onPress={handleApply} 
+          loading={isApplying}
+          disabled={isApplying}
           style={styles.applyBtn}
           contentStyle={{ height: 56 }}
         >

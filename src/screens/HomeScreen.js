@@ -1,686 +1,592 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList } from 'react-native';
-import { Text, Card, Avatar, IconButton, useTheme, Button, Divider, Badge } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, Dimensions, StatusBar, TextInput } from 'react-native';
+import { Text, Card, Avatar, IconButton, useTheme, Button, Divider, Badge, Searchbar } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { api } from '../services/api';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const QUICK_ACTIONS = [
-  { id: '1', title: 'Request Help', icon: 'hand-heart', color: '#FDF2F8', route: 'RequestHelp' },
-  { id: '2', title: 'Explore NGOs', icon: 'office-building', color: '#E8F5E9', route: 'NGOs' },
-  { id: '3', title: 'Upcoming Events', icon: 'calendar-star', color: '#FFF7ED', route: 'Events' },
-  { id: '4', title: 'Become Volunteer', icon: 'account-group', color: '#F0F9FF', route: 'NGOs' },
+  { id: '1', title: 'Request Help', icon: 'hand-heart', color: '#FFF1F2', route: 'RequestHelp' },
+  { id: '2', title: 'Find NGOs', icon: 'office-building', color: '#F0F9FF', route: 'NGOs' },
+  { id: '3', title: 'Volunteer', icon: 'account-group', color: '#F0FDF4', route: 'NGOs' },
+  { id: '4', title: 'Impact Events', icon: 'calendar-star', color: '#FFF7ED', route: 'Events' },
 ];
-
-const NEARBY_REQUESTS = [
-  { id: '1', title: 'Blood Donation Needed', distance: '2 km away', time: 'Tomorrow', category: 'Health', type: 'Urgent' },
-  { id: '2', title: 'Tree Plantation', distance: '5 km away', time: 'Saturday', category: 'Environment', type: 'Community' },
-  { id: '3', title: 'Food for Shelter', distance: '3.5 km away', time: 'Today', category: 'Social', type: 'Urgent' },
-];
-
-const UPCOMING_EVENTS = [
-  { id: '1', title: 'Beach Cleanup Drive', date: '25 March', location: 'Marina Beach', image: 'https://images.unsplash.com/photo-1621451537084-482c73073a0f?w=400' },
-  { id: '2', title: 'Old Age Home Visit', date: '28 March', location: 'Green View', image: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=400' },
-];
-
-const IMPACT_POSTS = [
-  {
-    id: '1',
-    ngo: 'Green Earth NGO',
-    title: 'Completed Tree Plantation Drive!',
-    stats: '120 trees planted 🌱 | 50+ lives impacted',
-    image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400'
-  },
-];
-
-const FEATURED_NGOS = [
-  { id: '1', name: 'Green Earth', impact: '12.5k trees planted', initials: 'GE', color: '#10B981' },
-  { id: '2', name: 'Hope Sanctuary', impact: '500+ families fed', initials: 'HS', color: '#F59E0B' },
-  { id: '3', name: 'Ocean Care', impact: '2t plastic removed', initials: 'OC', color: '#3B82F6' },
-];
-
-// Helper for chip styling
-const CustomChip = ({ children, style }) => (
-  <View style={[styles.chipBase, style]}>{children}</View>
-);
-
-const MeshBackground = () => (
-  <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFF9F0' }]}>
-    <View style={[styles.blob, { top: -100, left: -50, backgroundColor: 'rgba(217, 119, 6, 0.12)', width: 350, height: 350 }]} />
-    <View style={[styles.blob, { bottom: 200, right: -100, backgroundColor: 'rgba(16, 185, 129, 0.08)', width: 450, height: 450 }]} />
-    <View style={[styles.blob, { top: '30%', right: '10%', backgroundColor: 'rgba(99, 102, 241, 0.05)', width: 300, height: 300 }]} />
-  </View>
-);
 
 export const HomeScreen = ({ navigation }) => {
   const theme = useTheme();
+  
+  const [user, setUser] = useState({ fullName: 'Akash', avatarUrl: null });
+  const [nearbyRequests, setNearbyRequests] = useState([]);
+  const [featuredNGOs, setFeaturedNGOs] = useState([]);
+  const [stats, setStats] = useState({ volunteers: 0, ngos: 0 });
+  const [activities, setActivities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const renderQuickAction = (item) => (
-    <TouchableOpacity
-      key={item.id}
-      style={[styles.actionCard, { backgroundColor: item.color }]}
-      onPress={() => navigation.navigate(item.route)}
-    >
-      <MaterialCommunityIcons name={item.icon} size={32} color={theme.colors.primary} />
-      <Text variant="labelLarge" style={styles.actionText}>{item.title}</Text>
-    </TouchableOpacity>
-  );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [profile, reqData, ngoData, statsData, activityData] = await Promise.allSettled([
+          api.getUserProfile(),
+          api.getRequests(5),
+          api.getNGOs(5),
+          api.getUserStats(),
+          api.getUserActivity()
+        ]);
+        
+        if (profile.status === 'fulfilled') setUser(profile.value);
+        if (reqData.status === 'fulfilled' && reqData.value.length > 0) setNearbyRequests(reqData.value);
+        if (ngoData.status === 'fulfilled' && ngoData.value.length > 0) setFeaturedNGOs(ngoData.value);
+        if (statsData.status === 'fulfilled') setStats({ volunteers: statsData.value.volunteers || 1200, ngos: statsData.value.ngos || 45 });
+        if (activityData.status === 'fulfilled' && activityData.value.length > 0) setActivities(activityData.value);
+      } catch (error) {
+        console.warn("API Error (Home):", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
 
-  const renderNearbyRequest = ({ item }) => (
-    <Card style={styles.nearbyCard}>
-      <View style={styles.nearbyContent}>
-        <View style={styles.nearbyHeader}>
-          <Text variant="titleMedium" style={styles.nearbyTitle}>{item.title}</Text>
-          <CustomChip style={[styles.typeChip, { backgroundColor: item.type === 'Urgent' ? '#FEE2E2' : '#E0F2FE' }]}>
-            <Text style={{ color: item.type === 'Urgent' ? '#B91C1C' : '#0369A1', fontSize: 10, fontWeight: 'bold' }}>{item.type}</Text>
-          </CustomChip>
-        </View>
-        <Text variant="bodySmall" style={styles.nearbyMeta}>📍 {item.distance} | ⏰ {item.time}</Text>
-        <Button mode="outlined" style={styles.viewDetailsBtn} labelStyle={{ fontSize: 12 }}>View Details</Button>
-      </View>
-    </Card>
+  const renderSectionHeader = (title, linkText, onPress) => (
+    <View style={styles.sectionHeaderRow}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <TouchableOpacity onPress={onPress}>
+        <Text style={styles.sectionLink}>{linkText}</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
-    <View style={{ flex: 1 }}>
-      <MeshBackground />
-      <ScrollView
-        style={styles.container}
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="dark-content" />
+      
+      <ScrollView 
+        style={styles.container} 
         showsVerticalScrollIndicator={false}
+        stickyHeaderIndices={[1]}
+        contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {/* Cinematic Header & Search */}
-        <View style={styles.cinematicHeader}>
-          <View style={styles.headerTopRow}>
-            <View>
-              <Text variant="titleLarge" style={styles.greeting}>Good Morning,</Text>
-              <Text variant="displaySmall" style={styles.userName}>Akash 👋</Text>
-            </View>
-            <View style={styles.headerIcons}>
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => navigation.navigate('Notifications')}
-            >
-                <View style={styles.glassNotifBtn}>
-                  <IconButton icon="bell-outline" size={24} iconColor="#1A1C1E" style={{ margin: 0 }} />
-                  <Badge style={styles.homeBadge} size={16}>3</Badge>
-                </View>
-              </TouchableOpacity>
-              <View style={styles.avatarContainer}>
-                <Avatar.Image size={48} source={{ uri: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100' }} />
-              </View>
-            </View>
+        {/* HEADER */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greetingHeader}>Hello, {user.fullName.split(' ')[0]}</Text>
+            <Text style={styles.welcomeSub}>Ready to connect?</Text>
           </View>
-
-          {/* Floating Premium Search */}
-          {/* <View style={styles.searchWrapper}>
-            <View style={styles.premiumSearchBar}>
-              <MaterialCommunityIcons name="magnify" size={22} color="#94A3B8" />
-              <Text style={styles.searchText}>Search for NGOs, events, or help...</Text>
-              <View style={styles.searchFilterBtn}>
-                <MaterialCommunityIcons name="tune-variant" size={20} color="#FFF" />
-              </View>
-            </View>
-          </View> */}
-        </View>
-
-        {/* Urgent Help 2.0 (Deep Palette) */}
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => navigation.navigate('Reports', { screen: 'RequestDetails' })}
-          style={styles.urgentWrapper}
-        >
-          <View style={styles.urgentCardPremium}>
-            <View style={styles.urgentContentRow}>
-              <View style={styles.urgentLeftCol}>
-                <View style={styles.liveIndicatorRow}>
-                  <View style={styles.liveDot} />
-                  <Text style={styles.liveText}>CRITICAL • LIVE</Text>
-                </View>
-                <Text variant="headlineSmall" style={styles.urgentTitleDeep}>Oxygen Support Needed</Text>
-                <View style={styles.urgentLocRow}>
-                  <MaterialCommunityIcons name="map-marker-radius" size={14} color="#94A3B8" />
-                  <Text style={styles.urgentLocText}>Velachery • 1.2 km away</Text>
-                </View>
-              </View>
-              <View style={styles.respondAction}>
-                <View style={styles.respondCircle}>
-                  <MaterialCommunityIcons name="chevron-right" size={28} color="#FFF" />
-                </View>
-                <Text style={styles.respondLabel}>RESPOND</Text>
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Premium Bento Grid - Services */}
-        <View style={styles.sectionHeader}>
-          <Text variant="titleLarge" style={styles.sectionTitle}>Explore Services</Text>
-        </View>
-
-        <View style={styles.bentoGrid}>
-          {/* Main Large Bento Item */}
-          <TouchableOpacity
-            style={[styles.bentoItem, styles.bentoLarge]}
-            onPress={() => navigation.navigate('RequestHelp')}
-            activeOpacity={1}
+          <TouchableOpacity 
+            style={styles.notifIconPill}
+            onPress={() => navigation.navigate('Notifications')}
           >
-            <View style={[styles.premiumCardLarge, styles.bentoGlass]}>
-              <View style={[styles.bentoIconBox, { backgroundColor: '#FFEECC' }]}>
-                <MaterialCommunityIcons name="hand-heart" size={32} color="#D97706" />
-              </View>
-              <View style={styles.bentoContentLarge}>
-                <Text style={styles.bentoTitleLarge}>Request Help</Text>
-                <Text style={styles.bentoSubLarge}>Get assistance from our community.</Text>
-              </View>
-            </View>
+            <MaterialCommunityIcons name="bell-outline" size={24} color="#1A1C1E" />
+            <View style={styles.notifDot} />
           </TouchableOpacity>
+        </View>
 
-          <View style={styles.bentoRightCol}>
-            {/* Medium Bento Items */}
-            <TouchableOpacity
-              style={[styles.bentoItem, styles.bentoSmall]}
-              onPress={() => navigation.navigate('NGOs')}
-              activeOpacity={1}
-            >
-              <View style={[styles.glassCard, styles.bentoGlass]}>
-                <View style={[styles.bentoIconBoxSmall, { backgroundColor: '#E0F2FE' }]}>
-                  <MaterialCommunityIcons name="office-building" size={24} color="#0EA5E9" />
-                </View>
-                <Text style={styles.bentoTitleSmall}>Find NGOs</Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.bentoItem, styles.bentoSmall]}
-              onPress={() => navigation.navigate('Events')}
-              activeOpacity={1}
-            >
-              <View style={[styles.glassCard, styles.bentoGlass]}>
-                <View style={[styles.bentoIconBoxSmall, { backgroundColor: '#F0FDF4' }]}>
-                  <MaterialCommunityIcons name="calendar-star" size={24} color="#10B981" />
-                </View>
-                <Text style={styles.bentoTitleSmall}>All Events</Text>
-              </View>
-            </TouchableOpacity>
+        {/* SEARCH BAR (STREAKY) */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBox}>
+            <MaterialCommunityIcons name="magnify" size={24} color="#94A3B8" />
+            <TextInput 
+              placeholder="Search NGOs, events, or help..." 
+              style={styles.searchInput}
+              placeholderTextColor="#94A3B8"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
           </View>
         </View>
 
-        {/* Nearby Requests Section */}
-        <View style={styles.sectionHeader}>
-          <Text variant="titleLarge" style={styles.sectionTitle}>Help Needed Nearby</Text>
-          <Button mode="text" labelStyle={{ color: '#D97706' }}>View All</Button>
+        {/* QUICK ACTIONS GRID */}
+        <View style={styles.quickActionsContainer}>
+          <View style={styles.gridContainer}>
+            {QUICK_ACTIONS.map(action => (
+              <TouchableOpacity 
+                key={action.id} 
+                style={[styles.actionCard, { backgroundColor: action.color }]}
+                onPress={() => navigation.navigate(action.route)}
+              >
+                <View style={styles.actionIconPill}>
+                  <MaterialCommunityIcons name={action.icon} size={24} color="#1A1C1E" />
+                </View>
+                <Text style={styles.actionTitle}>{action.title}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
-          {NEARBY_REQUESTS.map(item => (
-            <TouchableOpacity
-              key={item.id}
-              activeOpacity={1}
-              onPress={() => navigation.navigate('Reports', { screen: 'RequestDetails' })}
-            >
-              <Card style={styles.nearbyPremiumCard}>
-                <View style={styles.nearbyContent}>
-                  <View style={styles.categoryBadge}>
-                    <Text style={styles.categoryText}>{item.category}</Text>
-                  </View>
-                  <Text variant="titleMedium" style={styles.nearbyTitle}>{item.title}</Text>
-                  <Text variant="bodySmall" style={styles.nearbyMeta}>📍 {item.distance} • {item.time}</Text>
+        {/* COMMUNITY VITALITY STATS */}
+        <View style={styles.statsRow}>
+          <View style={styles.statPill}>
+             <MaterialCommunityIcons name="broadcast" size={14} color="#10B981" />
+             <Text style={styles.statText}>{stats.volunteers} Online Now</Text>
+          </View>
+          <View style={styles.statPill}>
+             <MaterialCommunityIcons name="check-decagram" size={14} color="#3B82F6" />
+             <Text style={styles.statText}>{stats.ngos} Verified Partners</Text>
+          </View>
+        </View>
 
-                  <View style={styles.nearbyFooter}>
-                    <View style={styles.volunteersNeeded}>
-                      <MaterialCommunityIcons name="account-group" size={16} color="#6B7280" />
-                      <Text style={styles.volunteersText}>3 Needed</Text>
-                    </View>
-                    <Button mode="contained-tonal" compact style={styles.nearbyBtn}>View</Button>
-                  </View>
-                </View>
-              </Card>
+        {/* VERIFIED PARTNERS (Horizontal Scroll) */}
+        {renderSectionHeader("Verified Partners", "+ See all", () => navigation.navigate('NGOs'))}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.ngoScroll}>
+          {featuredNGOs.length > 0 ? featuredNGOs.map(ngo => (
+            <TouchableOpacity 
+              key={ngo.id} 
+              style={styles.ngoCard}
+              onPress={() => navigation.navigate('NGOs', { screen: 'NGODetails', params: { ngoId: ngo.id } })}
+            >
+              <View style={styles.ngoAvatarContainer}>
+                <Text style={styles.ngoInitials}>{ngo.initials || ngo.name.substring(0, 1)}</Text>
+              </View>
+              <Text style={styles.ngoName} numberOfLines={1}>{ngo.name}</Text>
+              <View style={styles.verificationBadge}>
+                 <MaterialCommunityIcons name="check-circle" size={12} color="#3B82F6" />
+                 <Text style={styles.verificationText}>Partner</Text>
+              </View>
             </TouchableOpacity>
-          ))}
+          )) : (
+            <View style={styles.emptyCardSmall}>
+              <Text style={styles.emptyTextSmall}>No Data</Text>
+            </View>
+          )}
         </ScrollView>
 
-        {/* NGO Stories/Featured */}
-        <View style={styles.sectionHeader}>
-          <Text variant="titleLarge" style={styles.sectionTitle}>NGO Highlights</Text>
-        </View>
-
-        {FEATURED_NGOS.map(ngo => (
-          <TouchableOpacity
-            key={ngo.id}
-            activeOpacity={1}
-            onPress={() => navigation.navigate('NGOs', { screen: 'NGODetails' })}
-          >
-            <Card style={styles.ngoPremiumCard}>
-              <View style={styles.ngoCardContent}>
-                <Avatar.Text size={48} label={ngo.initials} style={{ backgroundColor: ngo.color }} />
-                <View style={styles.ngoInfo}>
-                  <Text variant="titleMedium" style={styles.ngoName}>{ngo.name}</Text>
-                  <Text variant="bodySmall" style={styles.ngoImpact}>{ngo.impact}</Text>
+        {/* URGENT REQUESTS (Like Your Cards) */}
+        {renderSectionHeader("Urgent Requests", "+ See all", () => navigation.navigate('Reports'))}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cardsList}>
+          {nearbyRequests.length > 0 ? nearbyRequests.map((item, index) => (
+             <TouchableOpacity 
+              key={item.id}
+              activeOpacity={0.9}
+              onPress={() => navigation.navigate('Reports', { screen: 'RequestDetails', params: { requestId: item.id } })}
+             >
+                <View style={[styles.neoCard, { backgroundColor: index % 2 === 0 ? '#C1E1C1' : '#E0E7FF' }]}>
+                  <View style={styles.cardPattern}>
+                    <Text style={styles.cardPatternText}>CONNECT</Text>
+                  </View>
+                  <View style={styles.cardTop}>
+                    <View style={styles.cardCircleIcon}>
+                       <MaterialCommunityIcons name="hand-heart" size={20} color="#1A1C1E" />
+                    </View>
+                    <MaterialCommunityIcons name="circle-double" size={32} color="rgba(0,0,0,0.1)" />
+                  </View>
+                  <View style={styles.cardBottom}>
+                    <View>
+                      <Text style={styles.cardLabel}>{item.category || 'Help'}</Text>
+                      <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
+                    </View>
+                    <View style={styles.cardDetailsBtn}>
+                      <MaterialCommunityIcons name="eye-outline" size={16} color="#1A1C1E" />
+                      <Text style={styles.cardDetailsText}>Details</Text>
+                    </View>
+                  </View>
                 </View>
-                <IconButton icon="chevron-right" size={24} />
-              </View>
-            </Card>
-          </TouchableOpacity>
-        ))}
+             </TouchableOpacity>
+          )) : (
+            <View style={[styles.neoCard, { backgroundColor: '#F8F9FA', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9' }]}>
+               <MaterialCommunityIcons name="database-off-outline" size={40} color="#94A3B8" />
+               <Text style={styles.emptyCardText}>No Data</Text>
+            </View>
+          )}
+        </ScrollView>
 
-        <View style={{ height: 120 }} />
+        {/* COMMUNITY ACTIVITY */}
+        {renderSectionHeader("Community Activity", "See all", () => navigation.navigate('Reports'))}
+        <View style={styles.activityList}>
+          {activities.length > 0 ? activities.map(act => (
+            <TouchableOpacity 
+              key={act.id} 
+              style={styles.activityItem}
+              onPress={() => {
+                if (act.type === 'REQUEST') navigation.navigate('Reports', { screen: 'RequestDetails', params: { requestId: act.relatedId } });
+                else if (act.type === 'EVENT') navigation.navigate('Home', { screen: 'EventDetails', params: { eventId: act.relatedId } });
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={styles.activityIconCircle}>
+                <MaterialCommunityIcons 
+                  name={act.type === 'REQUEST' ? 'hand-heart' : 'calendar-star'} 
+                  size={24} 
+                  color="#1A1C1E" 
+                />
+              </View>
+              <View style={styles.activityContent}>
+                <Text style={styles.activityTitle}>{act.title}</Text>
+                <Text style={styles.activityTime}>{act.timeAgo || 'Just now'}</Text>
+              </View>
+              <View style={styles.activityImpact}>
+                <Text style={styles.impactPoints}>+{act.points || 10} pts</Text>
+                <MaterialCommunityIcons name="star-four-points" size={14} color="#10B981" />
+              </View>
+            </TouchableOpacity>
+          )) : (
+            <View style={styles.emptyActivity}>
+              <MaterialCommunityIcons name="history" size={40} color="#F1F5F9" />
+              <Text style={styles.emptyActivityText}>No Data</Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
   container: {
     flex: 1,
   },
-  blob: {
-    position: 'absolute',
-    borderRadius: 300,
-  },
   header: {
-    paddingHorizontal: 24,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingTop: 60,
-    paddingBottom: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  greeting: {
-    color: '#6B7280',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  userName: {
-    fontWeight: '900',
-    color: '#1A1C1E',
-  },
-  headerIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  glassNotifBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  homeBadge: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: '#EF4444',
-    borderWidth: 2,
-    borderColor: '#FFF',
-  },
-  avatarContainer: {
-    padding: 3,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    elevation: 4,
-  },
-  urgentCard: {
-    marginHorizontal: 24,
+    paddingHorizontal: 24,
     marginBottom: 20,
-    borderRadius: 32,
-    backgroundColor: '#1F2937',
-    elevation: 10,
-    overflow: 'hidden',
-  },
-  urgentContent: {
-    padding: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  urgentLeft: {
-    flex: 1,
-  },
-  urgentBadge: {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  urgentBadgeText: {
-    color: '#F87171',
-    fontWeight: '900',
-    fontSize: 10,
-    letterSpacing: 1,
-  },
-  urgentTitle: {
-    color: '#FFF',
-    fontWeight: '800',
-  },
-  urgentMeta: {
-    color: '#9CA3AF',
-    marginTop: 4,
-  },
-  urgentBtn: {
-    borderRadius: 16,
-    height: 44,
-  },
-  cinematicHeader: {
-    paddingTop: 60,
-    paddingBottom: 24,
-  },
-  headerTopRow: {
-    paddingHorizontal: 24,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  searchWrapper: {
-    paddingHorizontal: 24,
-  },
-  premiumSearchBar: {
-    height: 60,
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.05,
-    shadowRadius: 24,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  searchText: {
-    flex: 1,
-    marginLeft: 12,
-    color: '#94A3B8',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  searchFilterBtn: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  urgentWrapper: {
-    paddingHorizontal: 24,
-    marginBottom: 24,
-  },
-  urgentCardPremium: {
-    backgroundColor: '#0F172A',
-    borderRadius: 32,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.2,
-    shadowRadius: 40,
-    elevation: 10,
-  },
-  urgentContentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  urgentLeftCol: {
-    flex: 1,
-    marginRight: 16,
-  },
-  liveIndicatorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 10,
-  },
-  liveDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#EF4444',
-    shadowColor: '#EF4444',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-  },
-  liveText: {
-    color: '#EF4444',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1.2,
-  },
-  urgentTitleDeep: {
-    color: '#F8FAFC',
-    fontWeight: '900',
-    marginBottom: 8,
-  },
-  urgentLocRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  urgentLocText: {
-    color: '#94A3B8',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  respondAction: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  respondCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#EF4444',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 4,
-    borderColor: 'rgba(239, 68, 68, 0.2)',
-  },
-  respondLabel: {
-    color: '#EF4444',
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 1,
-  },
-  sectionHeader: {
-    paddingHorizontal: 24,
-    marginTop: 10,
-    marginBottom: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    fontWeight: '900',
-    color: '#1A1C1E',
-  },
-  bentoGrid: {
-    paddingHorizontal: 24,
-    flexDirection: 'row',
-    gap: 16,
-    height: 220,
-    marginBottom: 10,
-  },
-  bentoItem: {
-    flex: 1,
-  },
-  bentoLarge: {
-    flex: 1.2,
-  },
-  bentoRightCol: {
-    flex: 1,
-    gap: 16,
-  },
-  glassCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 30,
-    padding: 20,
-    flex: 1, // Ensures perfect fill without hacks
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.05,
-    shadowRadius: 20,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    justifyContent: 'space-between',
   },
-  bentoGlass: {
-    // Premium depth already handled in glassCard
-  },
-  bentoIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  premiumCardLarge: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 32,
-    padding: 24,
-    height: '100%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.05,
-    shadowRadius: 24,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    justifyContent: 'space-between',
-  },
-  bentoContentLarge: {
-    // Spacer handled by space-between
-  },
-  bentoTitleLarge: {
+  greetingHeader: {
     fontSize: 22,
     fontWeight: '900',
     color: '#1A1C1E',
-    marginBottom: 8,
   },
-  bentoSubLarge: {
-    fontSize: 12,
-    color: '#6B7280',
-    lineHeight: 20,
+  welcomeSub: {
+    fontSize: 14,
+    color: '#94A3B8',
+    marginTop: 4,
+    fontWeight: '600',
   },
-  bentoIconBoxSmall: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+  notifIconPill: {
+    width: 44,
+    height: 44,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
-  },
-  bentoTitleSmall: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#1A1C1E',
-  },
-  horizontalList: {
-    paddingLeft: 24,
-    paddingBottom: 24,
-    paddingRight: 24,
-  },
-  nearbyPremiumCard: {
-    width: 260,
-    marginRight: 20,
-    borderRadius: 32,
-    backgroundColor: '#FFFFFF',
-    padding: 2,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 15 },
-    shadowOpacity: 0.06,
-    shadowRadius: 28,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+  },
+  notifDot: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  searchContainer: {
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 28,
+    paddingHorizontal: 20,
+    height: 56,
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
-  nearbyContent: {
-    padding: 20,
+  searchInput: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1A1C1E',
   },
-  categoryBadge: {
-    backgroundColor: 'rgba(217, 119, 6, 0.1)',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+  quickActionsContainer: {
+    paddingHorizontal: 24,
+    marginTop: 25,
+    marginBottom: 25,
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  actionCard: {
+    width: (SCREEN_WIDTH - 48 - 12) / 2,
+    padding: 20,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  actionIconPill: {
+    width: 48,
+    height: 48,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
     marginBottom: 12,
   },
-  categoryText: {
-    color: '#D97706',
-    fontSize: 10,
+  actionTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#1A1C1E',
+    textAlign: 'center',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 24,
+    gap: 10,
+    marginBottom: 35,
+  },
+  statPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  statText: {
+    fontSize: 11,
     fontWeight: '800',
+    color: '#1A1C1E',
     textTransform: 'uppercase',
   },
-  nearbyTitle: {
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#1A1C1E',
+  },
+  sectionLink: {
+    fontSize: 14,
+    color: '#94A3B8',
+    fontWeight: '700',
+  },
+  ngoScroll: {
+    paddingLeft: 24,
+    paddingRight: 10,
+    marginBottom: 35,
+  },
+  ngoCard: {
+    width: 100,
+    alignItems: 'center',
+    marginRight: 20,
+  },
+  ngoAvatarContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#1A1C1E',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+  },
+  ngoInitials: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '900',
+  },
+  ngoName: {
+    fontSize: 13,
     fontWeight: '800',
     color: '#1A1C1E',
     marginBottom: 4,
   },
-  nearbyMeta: {
-    color: '#9CA3AF',
-    marginBottom: 16,
+  verificationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
-  nearbyFooter: {
+  verificationText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#3B82F6',
+    textTransform: 'uppercase',
+  },
+  cardsList: {
+    paddingLeft: 24,
+    paddingRight: 10,
+    marginBottom: 40,
+  },
+  neoCard: {
+    width: 280,
+    height: 180,
+    borderRadius: 35,
+    padding: 24,
+    marginRight: 14,
+    justifyContent: 'space-between',
+    overflow: 'hidden',
+  },
+  cardPattern: {
+    position: 'absolute',
+    top: 20,
+    right: -20,
+    opacity: 0.1,
+    transform: [{ rotate: '-45deg' }],
+  },
+  cardPatternText: {
+    fontSize: 40,
+    fontWeight: '900',
+    color: '#000',
+    letterSpacing: 2,
+  },
+  cardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  volunteersNeeded: {
+  cardCircleIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  cardLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: 'rgba(0,0,0,0.5)',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#1A1C1E',
+    marginTop: 2,
+    maxWidth: 150,
+  },
+  cardDetailsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 4,
+  },
+  cardDetailsText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#1A1C1E',
+  },
+  activityList: {
+    paddingHorizontal: 24,
+  },
+  activityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8F9FA',
+  },
+  activityIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  activityContent: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  activityTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#1A1C1E',
+  },
+  activityTime: {
+    fontSize: 12,
+    color: '#94A3B8',
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  activityImpact: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  volunteersText: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '600',
+  impactPoints: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#10B981',
   },
-  nearbyBtn: {
-    borderRadius: 12,
+  emptyCardText: {
+    marginTop: 10,
+    color: '#94A3B8',
+    fontWeight: '700',
   },
-  ngoPremiumCard: {
-    marginHorizontal: 24,
-    marginBottom: 20,
-    borderRadius: 28,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.04,
-    shadowRadius: 18,
-    elevation: 4,
+  emptyCardSmall: {
+    width: 100,
+    height: 100,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
-  ngoCardContent: {
-    padding: 18,
-    flexDirection: 'row',
+  emptyTextSmall: {
+    color: '#94A3B8',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  emptyActivity: {
+    paddingVertical: 40,
     alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 35,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#E2E8F0',
+    marginTop: 10,
   },
-  ngoInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  ngoName: {
+  emptyActivityText: {
+    color: '#94A3B8',
     fontWeight: '800',
-    color: '#1A1C1E',
-  },
-  ngoImpact: {
-    color: '#6B7280',
-    marginTop: 2,
+    fontSize: 14,
+    marginTop: 12,
   }
 });

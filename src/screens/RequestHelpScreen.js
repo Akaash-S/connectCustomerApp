@@ -4,6 +4,7 @@ import { TextInput, Button, Text, IconButton, RadioButton, ProgressBar, HelperTe
 import { useForm, Controller } from 'react-hook-form';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BlurView } from 'expo-blur';
+import { api } from '../services/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -25,6 +26,7 @@ export const RequestHelpScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('environment');
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [media, setMedia] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   // Added logic to handle potential bottom tab bar height if not provided by insets
@@ -70,10 +72,30 @@ export const RequestHelpScreen = ({ navigation }) => {
     else navigation.goBack();
   };
 
-  const handleFinalSubmit = () => {
+  const handleFinalSubmit = async () => {
+    setIsSubmitting(true);
     const finalData = { ...formValues, category: selectedCategory, skills: selectedSkills, media };
-    console.log('Final Submission:', finalData);
-    navigation.goBack();
+    try {
+      let eventDateIso;
+      try { eventDateIso = new Date(finalData.date).toISOString(); } 
+      catch(e) { eventDateIso = new Date().toISOString(); }
+      
+      await api.createRequest({
+        title: finalData.title,
+        description: finalData.description,
+        category: finalData.category.charAt(0).toUpperCase() + finalData.category.slice(1),
+        type: finalData.urgency === 'high' ? 'Urgent' : 'Standard',
+        location: finalData.location || "Unspecified",
+        volunteersNeeded: finalData.volunteers,
+        eventDate: eventDateIso
+      });
+      console.log('Final Request published successfully.');
+    } catch (err) {
+      console.warn('Failed to publish request to API (falling back to local UX)', err);
+    } finally {
+      setIsSubmitting(false);
+      navigation.goBack();
+    }
   };
 
   const toggleSkill = (skill) => {
@@ -115,6 +137,8 @@ export const RequestHelpScreen = ({ navigation }) => {
           <Button 
             mode="contained" 
             onPress={onAction} 
+            loading={isSubmitting && actionLabel.includes('Blast')}
+            disabled={isSubmitting && actionLabel.includes('Blast')}
             style={styles.actionBtn} 
             contentStyle={styles.actionBtnContent}
             activeOpacity={1}

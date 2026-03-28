@@ -16,10 +16,7 @@ import { Dimensions } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const TAB_BAR_HEIGHT = 80;
-const WAVE_WIDTH = 180; // Total width of the S-curve area
-const WAVE_DEPTH = 38;  // Vertical depth of the wave
-const TOP_RADIUS = 36;
+const TAB_BAR_HEIGHT = 85;
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -27,93 +24,52 @@ const Stack = createNativeStackNavigator();
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   const theme = useTheme();
 
-    const center = SCREEN_WIDTH / 2;
-    
-    // SVG Path for the notched bar
-    // M (Move) to start of top left curve
-    // Q (Quadratic Bezier) for top left corner
-    // L (Line) to start of notch
-    // C (Cubic Bezier) for smooth notch transition
-    // L to top right corner
-    // Q for top right corner
-    // L to bottom right, bottom left, and close
-    const d = `
-      M 0 ${TOP_RADIUS}
-      Q 0 0 ${TOP_RADIUS} 0
-      L ${center - WAVE_WIDTH / 2} 0
-      C ${center - WAVE_WIDTH / 4} 0, ${center - WAVE_WIDTH / 4} ${WAVE_DEPTH}, ${center} ${WAVE_DEPTH}
-      C ${center + WAVE_WIDTH / 4} ${WAVE_DEPTH}, ${center + WAVE_WIDTH / 4} 0, ${center + WAVE_WIDTH / 2} 0
-      L ${SCREEN_WIDTH - TOP_RADIUS} 0
-      Q ${SCREEN_WIDTH} 0 ${SCREEN_WIDTH} ${TOP_RADIUS}
-      L ${SCREEN_WIDTH} ${TAB_BAR_HEIGHT + 40}
-      L 0 ${TAB_BAR_HEIGHT + 40}
-      Z
-    `;
+  return (
+    <View style={styles.tabBarContainer}>
+      <View style={styles.routesContainer}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const isFocused = state.index === index;
+          const label = options.tabBarLabel !== undefined ? options.tabBarLabel : (options.title !== undefined ? options.title : route.name);
 
-    return (
-      <View style={styles.tabBarWrapper}>
-        {/* SVG Background Layer */}
-        <View style={styles.svgBackground}>
-          <Svg width={SCREEN_WIDTH} height={TAB_BAR_HEIGHT + 40}>
-            <Path
-              d={d}
-              fill="#FFF"
-              stroke="#F3F4F6"
-              strokeWidth={0.5}
-            />
-          </Svg>
-        </View>
+          const onPress = () => {
+            const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
 
-        <View style={styles.tabBarContent}>
-          <View style={styles.routesContainer}>
-            {state.routes.map((route, index) => {
-              const { options } = descriptors[route.key];
-              const isFocused = state.index === index;
-              const label = options.tabBarLabel !== undefined ? options.tabBarLabel : (options.title !== undefined ? options.title : route.name);
-  
-              const onPress = () => {
-                const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-                if (!isFocused && !event.defaultPrevented) {
-                  navigation.navigate(route.name);
-                }
-              };
-  
-              const isCenter = route.name === 'Add';
-              const IconComponent = options.tabBarIcon;
-  
-              return (
-                <TouchableOpacity
-                  key={route.key}
-                  onPress={onPress}
-                  style={[styles.tabButton, isCenter && styles.centerTabButton]}
-                  activeOpacity={1}
-                >
-                  <View style={[
-                    styles.iconContainer,
-                    isCenter && (isFocused ? styles.highlightIconContainerActive : styles.highlightIconContainerInactive)
-                  ]}>
-                    {IconComponent && (
-                      <IconComponent 
-                        focused={isFocused} 
-                        color={isCenter ? (isFocused ? '#FFF' : '#1A1C1E') : (isFocused ? '#D97706' : '#1A1C1E')} 
-                        size={isCenter ? 32 : 24} 
-                      />
-                    )}
-                  </View>
-                  <Text style={[
-                    styles.tabLabel,
-                    { color: isFocused ? '#D97706' : '#6B7280' },
-                    isCenter && isFocused && styles.centerLabelActive
-                  ]}>
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
+          const IconComponent = options.tabBarIcon;
+
+          return (
+            <TouchableOpacity
+              key={route.key}
+              onPress={onPress}
+              style={styles.tabButton}
+              activeOpacity={1}
+            >
+              <View style={styles.iconWrapper}>
+                {IconComponent && (
+                  <IconComponent 
+                    focused={isFocused} 
+                    color={isFocused ? '#1A1C1E' : '#94A3B8'} 
+                    size={24} 
+                  />
+                )}
+                {isFocused && <View style={styles.activeLine} />}
+              </View>
+              <Text style={[
+                styles.tabLabel,
+                { color: isFocused ? '#1A1C1E' : '#94A3B8' }
+              ]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
-    );
+    </View>
+  );
 };
 
 // Sub-stacks for each tab
@@ -230,95 +186,48 @@ export const AppNavigator = () => (
 );
 
 const styles = StyleSheet.create({
-  tabBarWrapper: {
-    height: 95,
-    backgroundColor: 'transparent',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+  tabBarContainer: {
+    height: TAB_BAR_HEIGHT,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingBottom: 25,
+    paddingTop: 10,
     elevation: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -5 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
-  svgBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  tabBarContent: {
-    flex: 1,
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
   },
   routesContainer: {
     flexDirection: 'row',
     height: '100%',
-    alignItems: 'baseline',
-    paddingTop: 10,
+    alignItems: 'center',
   },
   tabButton: {
     flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  centerTabButton: {
-    marginTop: -42, // Adjusted for the shallower wave "valley"
-  },
-  iconContainer: {
+  iconWrapper: {
     width: 44,
-    height: 44,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 4,
   },
-  highlightIconContainerActive: {
-    backgroundColor: '#D97706',
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    elevation: 8,
-    shadowColor: '#D97706',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    borderWidth: 5,
-    borderColor: '#FFF',
-  },
-  highlightIconContainerInactive: {
-    backgroundColor: '#F3F4F6',
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    borderWidth: 5,
-    borderColor: '#FFF',
+  activeLine: {
+    height: 2,
+    width: 12,
+    backgroundColor: '#1A1C1E',
+    borderRadius: 1,
+    marginTop: 4,
   },
   tabLabel: {
     fontSize: 9,
     fontWeight: '800',
-    marginTop: 4,
     textAlign: 'center',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  centerLabelActive: {
-    marginTop: 8,
-    color: '#D97706',
-    fontWeight: '900',
-  },
-  shadow: {
-    shadowColor: '#1E4D2B',
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.5,
-    elevation: 5
+    letterSpacing: 1,
   }
 });

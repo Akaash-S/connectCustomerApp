@@ -23,6 +23,7 @@
       },
       "package": "com.anonymous.connect"
     },
+    "scheme": "connect-app",
     "web": {
       "favicon": "./assets/favicon.png"
     },
@@ -30,6 +31,9 @@
       "eas": {
         "projectId": "cbd211bb-b4c4-4205-8cd8-64f808ba6e38"
       }
-    }
+    },
+    "plugins": [
+      "expo-web-browser"
+    ]
   }
 }

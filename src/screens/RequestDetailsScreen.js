@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { Text, Card, Avatar, useTheme, Button, IconButton, Divider, ProgressBar } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { api } from '../services/api';
 
 const REQUEST_TIMELINE = [
   { id: '1', title: 'Request Submitted', date: '15 March, 10:30 AM', status: 'completed', icon: 'file-document-edit' },
@@ -13,30 +14,57 @@ const REQUEST_TIMELINE = [
 
 export const RequestDetailsScreen = ({ route, navigation }) => {
   const theme = useTheme();
-  
-  const request = {
-    title: 'Grocery Help for Senior Citizen',
-    category: 'Essential Supplies',
-    icon: 'basket-outline',
-    location: 'Velachery, Chennai',
-    distance: '1.2 km from you',
-    date: '15 March 2026',
-    time: '10:00 AM - 12:00 PM',
-    description: 'Need assistance with weekly grocery shopping for an elderly couple living alone. They need basic supplies from the local market as they are unable to walk long distances.',
-    status: 'In Progress',
-    statusColor: '#3B82F6',
-    evidenceImages: [
-      'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400',
-      'https://images.unsplash.com/photo-1574630810574-cfa585d799b7?w=400',
-      'https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?w=400'
-    ],
-    assignedVolunteer: {
-      name: 'Ravi Kumar',
-      rating: 4.8,
-      completed: 124,
-      avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100',
-    }
-  };
+  const { requestId } = route.params || {};
+
+  const [request, setRequest] = useState({
+    title: 'Loading Request...',
+    category: 'General',
+    icon: 'help-circle-outline',
+    location: 'Loading...',
+    distance: '-',
+    date: '-',
+    time: '-',
+    description: 'Fetching details from the community server...',
+    status: 'Pending',
+    statusColor: '#F59E0B',
+    evidenceImages: [],
+    assignedVolunteer: null
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!requestId) return;
+
+    const fetchDetails = async () => {
+      try {
+        const data = await api.getRequestDetails(requestId);
+        if (data) {
+          setRequest({
+            title: data.title,
+            category: data.category || 'Community',
+            icon: data.type === 'Urgent' ? 'alert-circle-outline' : 'hand-heart-outline',
+            location: data.location || 'Chennai, India',
+            distance: 'Nearby',
+            date: data.eventDate ? new Date(data.eventDate).toLocaleDateString() : 'N/A',
+            time: data.eventDate ? new Date(data.eventDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+            description: data.description,
+            status: data.status || 'Active',
+            statusColor: data.type === 'Urgent' ? '#EF4444' : '#3B82F6',
+            evidenceImages: data.media || [
+              'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400'
+            ],
+            assignedVolunteer: data.assignedVolunteer || null
+          });
+        }
+      } catch (error) {
+        console.warn("API Error (RequestDetails):", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDetails();
+  }, [requestId]);
 
   const renderTimelineItem = (item, index) => {
     const isActive = item.status === 'active';

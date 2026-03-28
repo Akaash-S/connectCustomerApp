@@ -3,6 +3,8 @@ import { View, StyleSheet, Dimensions, Animated, Easing } from 'react-native';
 import { Text } from 'react-native-paper';
 import { BlurView } from 'expo-blur';
 
+import { supabase } from '../services/supabase';
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const SplashScreen = ({ navigation }) => {
@@ -25,10 +27,25 @@ export const SplashScreen = ({ navigation }) => {
       }),
     ]).start();
 
-    const timer = setTimeout(() => {
-      navigation.replace('Login');
-    }, 3000);
-    return () => clearTimeout(timer);
+    const checkSessionAndNavigate = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        // Wait at least 2.5 seconds to show the animation
+        setTimeout(() => {
+          if (session) {
+            navigation.replace('Main');
+          } else {
+            navigation.replace('Login');
+          }
+        }, 2500);
+      } catch (error) {
+        console.error("Session check error:", error);
+        navigation.replace('Login');
+      }
+    };
+
+    checkSessionAndNavigate();
   }, []);
 
   const MeshBackground = () => (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, SectionList } from 'react-native';
 import { Text, IconButton, useTheme, Button, Badge } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { NotificationCard } from '../components/NotificationCard';
 import { NotificationTabs } from '../components/NotificationTabs';
 import { NotificationEmptyState } from '../components/NotificationEmptyState';
+import { api } from '../services/api';
 
 const DUMMY_NOTIFICATIONS = [
   {
@@ -61,7 +62,36 @@ export const NotificationsScreen = ({ navigation }) => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState('All');
-  const [notifications, setNotifications] = useState(DUMMY_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchActivity = async () => {
+      try {
+        const data = await api.getUserActivity();
+        if (data && data.length > 0) {
+          const mapped = data.map(item => ({
+            id: item.id || Math.random().toString(),
+            title: item.title || item.action,
+            description: item.description || `Activity logged: ${item.action}`,
+            time: item.timestamp ? new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
+            type: item.type || 'System',
+            read: true,
+            date: 'Live'
+          }));
+          setNotifications(mapped);
+        } else {
+          setNotifications(DUMMY_NOTIFICATIONS);
+        }
+      } catch (error) {
+        console.warn("API Error (Notifications):", error);
+        setNotifications(DUMMY_NOTIFICATIONS);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchActivity();
+  }, []);
 
   const filteredNotifications = notifications.filter(n => 
     activeTab === 'All' || n.type === activeTab

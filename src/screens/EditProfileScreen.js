@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, TextInput, Button, Avatar, IconButton, useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { api } from '../services/api';
 
 export const EditProfileScreen = ({ navigation }) => {
   const theme = useTheme();
@@ -15,6 +16,49 @@ export const EditProfileScreen = ({ navigation }) => {
     location: 'Chennai, India',
     bio: 'Dedicated volunteer passionate about environment and community growth.',
   });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await api.getUserProfile();
+        if (data) {
+          setFormData({
+            name: data.fullName || data.name || '',
+            email: data.email || '',
+            phone: data.phone || '',
+            location: data.location || '',
+            bio: data.bio || ''
+          });
+        }
+      } catch (error) {
+        console.warn("API Error (EditProfile):", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      // Logic for updating profile (using syncUser as proxy for update)
+      await api.syncUser({
+        fullName: formData.name,
+        phone: formData.phone,
+        location: formData.location,
+        bio: formData.bio
+      });
+      navigation.goBack();
+    } catch (error) {
+      console.warn("API Error (SaveProfile):", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const MeshBackground = () => (
     <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFF9F0' }]}>
@@ -107,7 +151,9 @@ export const EditProfileScreen = ({ navigation }) => {
 
           <Button 
             mode="contained" 
-            onPress={() => navigation.goBack()} 
+            onPress={handleSave} 
+            loading={isSaving}
+            disabled={isSaving}
             style={styles.saveBtn}
             contentStyle={{ height: 60 }}
             activeOpacity={1}
